@@ -102,7 +102,7 @@ variable "ldap_org" {
 }
 
 variable "ldap_domain" {
-  default = "cicd.cnx.cna.vmware.com"
+  default = "cicd.cnx.cna.vmware.local"
 }
 
 variable "ldap_root_user" {

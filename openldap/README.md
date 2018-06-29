@@ -22,7 +22,7 @@ $ docker run --name slapd --rm -p 3889:389 slapd
 
 #### Query the LDAP server
 ```shell
-$ ldapwhoami -H ldap://localhost:3889 -x -D "cn=root,DC=vmware,DC=com" -w admin
+$ ldapwhoami -H ldap://localhost:3889 -x -D "cn=root,DC=vmware,DC=local" -w admin
 dn:cn=root,dc=vmware,dc=com
 ```
 
@@ -36,7 +36,7 @@ The following environment variables are used to configure the LDAP server:
 
 | Environment Variable | Description | Default |
 |---|---|---|
-| `LDAP_DOMAIN` | The FQDN of the LDAP server's root object | `vmware.com` |
+| `LDAP_DOMAIN` | The FQDN of the LDAP server's root object | `vmware.local` |
 | `LDAP_ORG` | The name of the LDAP server's root orginization | `VMware` |
 | `LDAP_ROOT_USER` | The LDAP server's admin user | `root` |
 | `LDAP_ROOT_PASS` | The hashed password for the LDAP server's admin user | `slappasswd -h "{SSHA}" -s admin)` |
@@ -54,7 +54,7 @@ with LDIF content. The content must be base64-encoded.
 ##### Store base64-encoded LDIF content in environment variable
 ```shell
 $ export LDAP_LDIF=$(base64 <<EOF
-dn: cn=akutz,{{ LDAP_BASE_DN }}
+dn: cn=akutz,{{ LDAP_USERS_DN }}
 cn: akutz
 displayName: Andrew Kutz
 givenName: Andrew
@@ -76,8 +76,8 @@ $ docker run --name slapd --rm -p 3889:389 -e LDAP_LDIF64=$LDAP_LDIF64 slapd
 
 ##### Query the LDAP server
 ```shell
-$ ldapsearch -LLL -H ldap://localhost:3889 -b "DC=vmware,DC=com" \
-  -x -D "cn=root,DC=vmware,DC=com" -w admin \
+$ ldapsearch -LLL -H ldap://localhost:3889 -b "DC=vmware,DC=local" \
+  -x -D "cn=root,DC=vmware,DC=local" -w admin \
   "(objectClass=inetOrgPerson)" 
 
 dn: cn=akutz,dc=vmware,dc=com
@@ -104,7 +104,7 @@ files in this directory will be used to seed the LDAP server.
 $ rm -fr /tmp/ldif && \
   mkdir -p /tmp/ldif && \
   cat <<EOF > /tmp/ldif/akutz.ldif &&
-dn: cn=akutz,{{ LDAP_BASE_DN }}
+dn: cn=akutz,{{ LDAP_USERS_DN }}
 cn: akutz
 displayName: Andrew Kutz
 givenName: Andrew
@@ -114,7 +114,7 @@ userPassword: {SSHA}9WkeaxRp+lJYB305009gIPaqxxL+3/5A
 mail: akutz@vmware.com
 EOF
   cat <<EOF > /tmp/ldif/luoh.ldif
-dn: cn=luoh,{{ LDAP_BASE_DN }}
+dn: cn=luoh,{{ LDAP_USERS_DN }}
 cn: luoh
 displayName: Hui Luo
 givenName: Hui
@@ -135,8 +135,8 @@ $ docker run --name slapd --rm -p 3889:389 -v /tmp/ldif:/ldif slapd
 
 ##### Query the LDAP server
 ```shell
-$ ldapsearch -LLL -H ldap://localhost:3889 -b "DC=vmware,DC=com" \
-  -x -D "cn=root,DC=vmware,DC=com" -w admin \
+$ ldapsearch -LLL -H ldap://localhost:3889 -b "DC=vmware,DC=local" \
+  -x -D "cn=root,DC=vmware,DC=local" -w admin \
   "(objectClass=inetOrgPerson)" 
 
 dn: cn=akutz,dc=vmware,dc=com
@@ -182,13 +182,13 @@ $ ./run.sh deploy openldap
 
 ### Provision an LDAP server with a custom LDAP domain
 ```shell
-$ VMCTF_LDAP_DOMAIN=cnx.cna.vmware.com ./run.sh deploy openldap
+$ VMCTF_LDAP_DOMAIN=cnx.cna.vmware.local ./run.sh deploy openldap
 ```
 
 ### Provision an LDAP server with seed data via environment variable
 ```shell
 $ VMCTF_LDAP_LDIF64=$(base64 <<EOF
-dn: cn=akutz,{{ LDAP_BASE_DN }}
+dn: cn=akutz,{{ LDAP_USERS_DN }}
 cn: akutz
 displayName: Andrew Kutz
 givenName: Andrew

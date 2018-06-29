@@ -4,7 +4,7 @@
 # verified by https://www.shellcheck.net
 
 # Set defaults.
-LDAP_DOMAIN=${LDAP_DOMAIN:-vmware.com}
+LDAP_DOMAIN=${LDAP_DOMAIN:-vmware.local}
 LDAP_ORG=${LDAP_ORG:-VMware}
 LDAP_ROOT_USER=${LDAP_ROOT_USER:-root}
 LDAP_ROOT_PASS=${LDAP_ROOT_PASS:-$(slappasswd -h "{SSHA}" -s admin)}
@@ -77,11 +77,12 @@ fi
 # Get the LDAP domain where the users OU will be created and translate
 # the domain to the DC= format.
 # shellcheck disable=SC2086
-LDAP_DOMAIN_USERS=$(echo ${LDAP_DOMAIN_LIST} | awk '{print $NF}')
-LDAP_DOMAIN_USERS=$(tranlsate_domain_to_ldap "${LDAP_DOMAIN_USERS}")
+LDAP_BASE_DN=$(echo ${LDAP_DOMAIN_LIST} | awk '{print $NF}')
+LDAP_BASE_DN=$(tranlsate_domain_to_ldap "${LDAP_BASE_DN}")
 
-# Build the Users DN
-LDAP_USERS_DN="OU=users,${LDAP_DOMAIN_USERS}"
+# Build the Users and Groups DNs
+LDAP_USERS_DN="OU=users,${LDAP_BASE_DN}"
+LDAP_GROUPS_DN="OU=groups,${LDAP_BASE_DN}"
 
 # Add all of the parts of the domain
 for d in ${LDAP_DOMAIN_LIST}; do
@@ -98,6 +99,10 @@ slapadd <<EOF
 dn: ${LDAP_USERS_DN}
 objectClass: organizationalUnit
 ou: users
+
+dn: ${LDAP_GROUPS_DN}
+objectClass: organizationalUnit
+ou: groups
 EOF
 
 # If LDAP_LDIF64 is defined then decode it, interpolate it, write it
@@ -105,7 +110,9 @@ EOF
 if [ -n "${LDAP_LDIF64}" ]; then
   if ldif=$(echo "${LDAP_LDIF64}" | base64 -d); then
     echo "${ldif}" | \
-      sed 's/{{ LDAP_BASE_DN }}/'"${LDAP_USERS_DN}"'/g' | \
+      sed -e 's/{{ LDAP_BASE_DN }}/'"${LDAP_BASE_DN}"'/g' \
+          -e 's/{{ LDAP_USERS_DN }}/'"${LDAP_USERS_DN}"'/g' \
+          -e 's/{{ LDAP_GROUPS_DN }}/'"${LDAP_GROUPS_DN}"'/g' | \
       slapadd
   fi
 fi
