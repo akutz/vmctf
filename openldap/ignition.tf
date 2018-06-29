@@ -15,19 +15,6 @@ data "ignition_file" "hostname" {
   }
 }
 
-data "ignition_file" "ipv6_disabled" {
-  filesystem = "root"
-  path       = "/etc/sysctl.d/ipv6-disabled.conf"
-
-  content {
-    content = <<EOF
-net.ipv6.conf.all.disable_ipv6=1
-net.ipv6.conf.default.disable_ipv6=1
-net.ipv6.conf.ens192.disable_ipv6=1
-EOF
-  }
-}
-
 data "ignition_file" "slapd_dockerfile" {
   filesystem = "root"
   path       = "/var/lib/slapd/Dockerfile"
@@ -102,7 +89,6 @@ EOF
 data "ignition_config" "config" {
   files = [
     "${data.ignition_file.hostname.id}",
-    "${data.ignition_file.ipv6_disabled.id}",
     "${data.ignition_file.slapd_env.id}",
     "${data.ignition_file.slapd_sh.id}",
     "${data.ignition_file.slapd_dockerfile.id}",
