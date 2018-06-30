@@ -105,10 +105,10 @@ objectClass: organizationalUnit
 ou: groups
 EOF
 
-# If LDAP_LDIF64 is defined then decode it, interpolate it, write it
+# If LDAP_LDIF is defined then decode it, interpolate it, write it
 # to a file, and import it.
-if [ -n "${LDAP_LDIF64}" ]; then
-  if ldif=$(echo "${LDAP_LDIF64}" | base64 -d); then
+if [ -n "${LDAP_LDIF}" ]; then
+  if ldif=$(echo "${LDAP_LDIF}" | base64 -d); then
     echo "${ldif}" | \
       sed -e 's/{{ LDAP_BASE_DN }}/'"${LDAP_BASE_DN}"'/g' \
           -e 's/{{ LDAP_USERS_DN }}/'"${LDAP_USERS_DN}"'/g' \

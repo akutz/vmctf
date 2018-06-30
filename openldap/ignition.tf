@@ -43,7 +43,7 @@ LDAP_ORG=${var.ldap_org}
 LDAP_DOMAIN=${var.ldap_domain}
 LDAP_ROOT_USER=${var.ldap_root_user}
 LDAP_ROOT_PASS=${var.ldap_root_pass}
-LDAP_LDIF64=${var.ldap_ldif64}
+LDAP_LDIF=${var.ldap_ldif}
 EOF
   }
 }

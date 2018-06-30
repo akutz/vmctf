@@ -48,7 +48,7 @@ The LDAP server can be seeded with LDIF data via environment variable and
 by mapping a volume.
 
 #### Seed by environment variable
-The environment variable `LDAP_LDIF64` may be used to seed the LDAP server
+The environment variable `LDAP_LDIF` may be used to seed the LDAP server
 with LDIF content. The content must be base64-encoded.
 
 ##### Store base64-encoded LDIF content in environment variable
@@ -68,7 +68,7 @@ EOF
 
 ##### Start the LDAP server with seed data via environment variable
 ```shell
-$ docker run --name slapd --rm -p 3889:389 -e LDAP_LDIF64=$LDAP_LDIF64 slapd
+$ docker run --name slapd --rm -p 3889:389 -e LDAP_LDIF=$LDAP_LDIF slapd
 5b355c88 @(#) $OpenLDAP: slapd 2.4.45 (Nov  9 2017 20:08:19) $
 	buildozer@build-3-7-x86_64:/home/buildozer/aports/main/openldap/src/openldap-2.4.45/servers/slapd
 5b355c88 slapd starting
@@ -187,7 +187,7 @@ $ VMCTF_LDAP_DOMAIN=cnx.cna.vmware.local ./run.sh deploy openldap
 
 ### Provision an LDAP server with seed data via environment variable
 ```shell
-$ VMCTF_LDAP_LDIF64=$(base64 <<EOF
+$ VMCTF_LDAP_LDIF=$(base64 <<EOF
 dn: cn=akutz,{{ LDAP_USERS_DN }}
 cn: akutz
 displayName: Andrew Kutz

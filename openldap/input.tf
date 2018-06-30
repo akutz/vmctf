@@ -113,6 +113,6 @@ variable "ldap_root_pass" {
   default = ""
 }
 
-variable "ldap_ldif64" {
+variable "ldap_ldif" {
   default = ""
 }
