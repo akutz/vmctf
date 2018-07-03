@@ -116,3 +116,15 @@ variable "ldap_root_pass" {
 variable "ldap_ldif" {
   default = ""
 }
+
+variable "ldap_tls_key" {
+  default = ""
+}
+
+variable "ldap_tls_crt" {
+  default = ""
+}
+
+variable "ldap_tls_ca" {
+  default = ""
+}

@@ -44,6 +44,9 @@ LDAP_DOMAIN=${var.ldap_domain}
 LDAP_ROOT_USER=${var.ldap_root_user}
 LDAP_ROOT_PASS=${var.ldap_root_pass}
 LDAP_LDIF=${var.ldap_ldif}
+LDAP_TLS_CA=${var.ldap_tls_ca}
+LDAP_TLS_KEY=${var.ldap_tls_key}
+LDAP_TLS_CRT=${var.ldap_tls_crt}
 EOF
   }
 }
@@ -62,7 +65,8 @@ ExecStartPre=/usr/bin/docker build -t slapd /var/lib/slapd
 ExecStart=/usr/bin/docker run --rm --name=slapd \
   --env-file=${data.ignition_file.slapd_env.path} \
   -v /var/lib/slapd/ldif:/ldif \
-  -p 389:389 -p 636:636 slapd
+  -p 389:389 -p 636:636 \
+  --hostname=ldap.cicd.cnx.cna.vmware.run slapd
 
 [Install]
 WantedBy=multi-user.target
