@@ -3,6 +3,15 @@
 # posix complaint
 # verified by https://www.shellcheck.net
 
+# Set defaults.
+LDAP_DOMAIN=${LDAP_DOMAIN:-vmware.local}
+LDAP_ORG=${LDAP_ORG:-VMware}
+LDAP_ROOT_USER=${LDAP_ROOT_USER:-root}
+LDAP_ROOT_PASS=${LDAP_ROOT_PASS:-$(slappasswd -h "{SSHA}" -s admin)}
+LDAP_LOG_LEVEL=${LDAP_LOG_LEVEL:-stats}
+LDAP_CONF=${LDAP_CONF:-/etc/openldap/slapd.conf}
+LDAP_DATA=${LDAP_DATA:-/var/lib/openldap/openldap-data}
+
 # Figure out how many domain components there are.
 print_domain_parts() {
   # shellcheck disable=SC2034
@@ -22,17 +31,6 @@ tranlsate_domain_to_ldap() {
   printf "DC=%s" "$(echo "${1}" | sed 's/\./,DC=/g')"
 }
 
-# Set defaults.
-LDAP_DOMAIN=${LDAP_DOMAIN:-vmware.local}
-LDAP_ORG=${LDAP_ORG:-VMware}
-LDAP_ROOT_USER=${LDAP_ROOT_USER:-root}
-LDAP_ROOT_PASS=${LDAP_ROOT_PASS:-$(slappasswd -h "{SSHA}" -s admin)}
-LDAP_LOG_LEVEL=${LDAP_LOG_LEVEL:-stats}
-LDAPRC_PATH=${LDAPRC_PATH:-/root/.ldaprc}
-SLAPD_ARGS=${SLAPD_ARGS:-/run/openldap/slapd.args}
-SLAPD_CONF=${SLAPD_CONF:-/etc/openldap/slapd.conf}
-SLAPD_DATA=${SLAPD_DATA:-/var/lib/openldap/openldap-data}
-
 # Get the list of LDAP domains to create.
 LDAP_DOMAIN_LIST=$(print_reverse_domain_parts "${LDAP_DOMAIN}")
 
@@ -42,6 +40,7 @@ LDAP_DOMAIN_ROOT=$(echo ${LDAP_DOMAIN_LIST} | awk '{print $1}')
 LDAP_DOMAIN_ROOT=$(tranlsate_domain_to_ldap "${LDAP_DOMAIN_ROOT}")
 
 # Ensure the path to the .ldaprc file exists.
+LDAPRC_PATH=/root/.ldaprc
 mkdir -p $(dirname "${LDAPRC_PATH}")
 
 # TLS=false
@@ -72,9 +71,9 @@ else
   # case use the cert as the CA.
   if [ -z "${LDAP_TLS_CA}" ]; then LDAP_TLS_CA=$LDAP_TLS_CRT; fi
 
-  echo "${LDAP_TLS_CA}"  | base64 -d > /etc/openldap/tls/ca.pem
-  echo "${LDAP_TLS_KEY}" | base64 -d > /etc/openldap/tls/key.pem
-  echo "${LDAP_TLS_CRT}" | base64 -d > /etc/openldap/tls/crt.pem
+  echo "${LDAP_TLS_CA}"  | base64 -d | gzip -d > /etc/openldap/tls/ca.pem
+  echo "${LDAP_TLS_KEY}" | base64 -d | gzip -d > /etc/openldap/tls/key.pem
+  echo "${LDAP_TLS_CRT}" | base64 -d | gzip -d > /etc/openldap/tls/crt.pem
 
   # Injected into the slapd configuration file.
   LDAP_TLS_CONF=$(cat <<EOF
@@ -110,15 +109,15 @@ fi
 # * authenticated users can read all
 ACCESS_CONTROL=${ACCESS_CONTROL:-'access to * by self write by anonymous auth by * read'}
 
-# If SLAPD_CONF is not defined then create a default config file.
-if [ ! -e "${SLAPD_CONF}" ]; then
-  cat > "${SLAPD_CONF}" <<EOF
+# If LDAP_CONF is not defined then create a default config file.
+if [ ! -e "${LDAP_CONF}" ]; then
+  cat > "${LDAP_CONF}" <<EOF
 include     /etc/openldap/schema/core.schema
 include     /etc/openldap/schema/cosine.schema
 include     /etc/openldap/schema/inetorgperson.schema
 
 pidfile     /run/openldap/slapd.pid
-argsfile    ${SLAPD_ARGS}
+argsfile    /run/openldap/slapd.args
 
 modulepath  /usr/lib/openldap
 moduleload  back_mdb.so
@@ -133,7 +132,7 @@ suffix      ${LDAP_DOMAIN_ROOT}
 rootdn      cn=${LDAP_ROOT_USER},${LDAP_DOMAIN_ROOT}
 
 rootpw      ${LDAP_ROOT_PASS}
-directory   ${SLAPD_DATA}
+directory   ${LDAP_DATA}
 
 index       objectClass	eq
 index       mail eq
@@ -174,7 +173,7 @@ EOF
 # If LDAP_LDIF is defined then decode it, interpolate it, write it
 # to a file, and import it.
 if [ -n "${LDAP_LDIF}" ]; then
-  if ldif=$(echo "${LDAP_LDIF}" | base64 -d); then
+  if ldif=$(echo "${LDAP_LDIF}" | base64 -d | gzip -d); then
     echo "${ldif}" | \
       sed -e 's/{{ LDAP_BASE_DN }}/'"${LDAP_BASE_DN}"'/g' \
           -e 's/{{ LDAP_USERS_DN }}/'"${LDAP_USERS_DN}"'/g' \
@@ -192,10 +191,10 @@ fi
 if [ "${1}" = "shell" ]; then exec /bin/sh; fi
 
 if [ "${LDAP_LOG_LEVEL}" = "255" ]; then
-  echo && cat "${SLAPD_CONF}" && echo
+  echo && cat "${LDAP_CONF}" && echo
 fi
 
 # Start slapd
 exec slapd -d "${LDAP_LOG_LEVEL}" \
-           -f "${SLAPD_CONF}" \
+           -f "${LDAP_CONF}" \
            -h "${SLAPD_HOSTS}"

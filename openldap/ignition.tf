@@ -11,7 +11,7 @@ data "ignition_file" "hostname" {
   path       = "/etc/hostname"
 
   content {
-    content = "${var.name}.${var.network_domain}"
+    content = "${var.hostname}"
   }
 }
 
@@ -43,6 +43,7 @@ LDAP_ORG=${var.ldap_org}
 LDAP_DOMAIN=${var.ldap_domain}
 LDAP_ROOT_USER=${var.ldap_root_user}
 LDAP_ROOT_PASS=${var.ldap_root_pass}
+LDAP_LOG_LEVEL=${var.ldap_log_level}
 LDAP_LDIF=${var.ldap_ldif}
 LDAP_TLS_CA=${var.ldap_tls_ca}
 LDAP_TLS_KEY=${var.ldap_tls_key}
@@ -56,17 +57,19 @@ data "ignition_systemd_unit" "slapd" {
 
   content = <<EOF
 [Unit]
-After=docker.service
-Before=slapd-seed.service
+After=docker.service network-online.target
 Requires=docker.service
+Wants=network-online.target
 
 [Service]
+ExecStartPre=/bin/mkdir -p /var/lib/slapd/ldif
 ExecStartPre=/usr/bin/docker build -t slapd /var/lib/slapd
 ExecStart=/usr/bin/docker run --rm --name=slapd \
   --env-file=${data.ignition_file.slapd_env.path} \
   -v /var/lib/slapd/ldif:/ldif \
   -p 389:389 -p 636:636 \
-  --hostname=ldap.cicd.cnx.cna.vmware.run slapd
+  --hostname=${var.hostname} \
+  slapd
 
 [Install]
 WantedBy=multi-user.target

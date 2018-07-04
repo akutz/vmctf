@@ -40,14 +40,14 @@ TLS_OU_NAME=${TLS_OU_NAME:-CNX}
 TLS_COMMON_NAME=${TLS_COMMON_NAME:-ldap.cicd.cnx.cna.vmware.run}
 TLS_EMAIL=${TLS_EMAIL:-akutz@vmware.com}
 
-# Set to TRUE (case sensitive) to indicate the certificate is a CA.
+# Set to true to indicate the certificate is a CA.
 TLS_IS_CA=${TLS_IS_CA:-FALSE}
 
 # The certificate's key usage.
-TLS_KEY_USAGE=keyCertSign
+TLS_KEY_USAGE=${TLS_KEY_USAGE:-keyCertSign}
 
 # The certificate's extended key usage string.
-TLS_EXT_KEY_USAGE=serverAuth
+TLS_EXT_KEY_USAGE=${TLS_EXT_KEY_USAGE:-serverAuth}
 
 # Set to false to disable subject alternative names (SANs).
 TLS_SAN=${TLS_SAN:-true}
@@ -94,7 +94,7 @@ commonName             = ${TLS_COMMON_NAME}
 emailAddress           = ${TLS_EMAIL}
 
 [ ext ]
-basicConstraints       = CA:${TLS_IS_CA}
+basicConstraints       = CA:$(echo "${TLS_IS_CA}" | tr [a-z] [A-Z])
 keyUsage               = ${TLS_KEY_USAGE}
 extendedKeyUsage       = ${TLS_EXT_KEY_USAGE}
 subjectKeyIdentifier   = hash
@@ -143,21 +143,29 @@ if [ "${EXIT_CODE}" -eq "0" ]; then
     mkdir -p "$(dirname "${PEM_FILE}")"
     cat key.pem > "${PEM_FILE}"
     cat crt.pem >> "${PEM_FILE}"
+  fi
 
   # Copy the key and crt files to TLS_KEY_OUT and TLS_CRT_OUT.
-  elif [ -n "${TLS_KEY_OUT}" ] && [ -n "${TLS_CRT_OUT}" ]; then
+  if [ -n "${TLS_KEY_OUT}" ]; then
     KEY_FILE=$(abs_path "${TLS_KEY_OUT}")
-    CRT_FILE=$(abs_path "${TLS_CRT_OUT}")
-    mkdir -p "$(dirname "${KEY_FILE}")" "$(dirname "${CRT_FILE}")"
+    mkdir -p "$(dirname "${KEY_FILE}")"
     cp -f key.pem "${KEY_FILE}"
+  fi
+
+  if [ -n "${TLS_CRT_OUT}" ]; then
+    CRT_FILE=$(abs_path "${TLS_CRT_OUT}")
+    mkdir -p "$(dirname "${CRT_FILE}")"
     cp -f crt.pem "${CRT_FILE}"
+  fi
 
   # Print the key and certificate to STDOUT.
-  else
-    cat key.pem && cat crt.pem
-  fi
+  cat key.pem && echo && cat crt.pem
 else
   cat gen.log || true
+fi
+
+if [ "${EXIT_CODE}" -eq "0" ] && [ "${TLS_PLAIN_TEXT}" = "true" ]; then
+  echo && openssl x509 -in crt.pem -noout -text
 fi
 
 # Switch to the previous directory.

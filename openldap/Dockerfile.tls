@@ -1,0 +1,12 @@
+FROM alpine:3.7
+LABEL maintainer="Andrew Kutz <akutz@vmware.com>"
+
+# Install OpenSSL
+RUN apk --no-cache add openssl
+
+# Copy the certificate generation script to the root of the filesystem.
+COPY newcert.sh /
+RUN chmod 0755 /newcert.sh
+
+# The entrypoint is the certificate generation script.
+ENTRYPOINT [ "/newcert.sh" ]
