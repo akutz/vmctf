@@ -39,6 +39,7 @@ done
 # Launch the container.
 docker run \
   --rm \
+  --name ${CONTAINER_NAME:-vmctf} \
   --env-file "${ENVS_FILE}" \
   -v "$(pwd)/data":/tf/data \
   vmctf \

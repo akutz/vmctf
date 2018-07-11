@@ -54,7 +54,7 @@ if [ "${LDAP_TLS}" = "false" ] || \
   # Write the ldaprc file.
   cat <<EOF > ${LDAPRC_PATH}
 BASE        ${LDAP_DOMAIN_ROOT}
-URI         ldap://localhost
+URI         ldap://127.0.0.1
 BINDDN      CN=${LDAP_ROOT_USER},${LDAP_DOMAIN_ROOT}
 EOF
 
@@ -94,7 +94,7 @@ EOF
   # Write the ldaprc file.
   cat <<EOF > ${LDAPRC_PATH}
 BASE        ${LDAP_DOMAIN_ROOT}
-URI         ldaps://localhost
+URI         ldaps://127.0.0.1
 BINDDN      CN=${LDAP_ROOT_USER},${LDAP_DOMAIN_ROOT}
 
 TLS_CACERT  /etc/openldap/tls/ca.pem
