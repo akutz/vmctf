@@ -17,7 +17,7 @@ if [ -z "${NAME}" ]; then
   exit 1
 fi
 
-if ! ls "${NAME}/*.tf" >/dev/null 2>&1; then
+if ! ls "${NAME}"/*.tf >/dev/null 2>&1; then
   echo "invalid system name"
   exit 1
 fi
