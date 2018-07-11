@@ -3,8 +3,24 @@
 # posix complaint
 # verified by https://www.shellcheck.net
 
-if [ -z "${COMMAND}" ]; then COMMAND="${1:-shell}"; fi
-if [ -z "${NAME}" ]; then NAME="${2:-openldap}"; fi
+COMMAND="${1}"
+NAME="${2}"
+
+if [ ! "${COMMAND}" = "deploy" ] && \
+   [ ! "${COMMAND}" = "destroy" ]; then \
+   echo "usage: ${0} deploy|destroy NAME"
+   exit 1
+fi
+
+if [ -z "${NAME}" ]; then
+  echo "usage: ${0} deploy|destroy NAME"
+  exit 1
+fi
+
+if ! ls "${NAME}/*.tf" >/dev/null 2>&1; then
+  echo "invalid system name"
+  exit 1
+fi
 
 # Use an environment variable file to prevent the process list
 # from echoing sensitive credential information.
@@ -39,7 +55,7 @@ done
 # Launch the container.
 docker run \
   --rm \
-  --name ${CONTAINER_NAME:-vmctf} \
+  --name "${CONTAINER_NAME:-vmctf}" \
   --env-file "${ENVS_FILE}" \
   -v "$(pwd)/data":/tf/data \
   vmctf \

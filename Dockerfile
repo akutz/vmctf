@@ -17,7 +17,7 @@ COPY *.tf entrypoint.sh /tf/
 RUN chmod +x /tf/entrypoint.sh
 
 # Copy the systems into the container
-COPY openldap/ /tf/openldap/
+COPY ldap/ /tf/ldap/
 RUN chmod +x /tf/*/deploy.sh /tf/*/destroy.sh 2> /dev/null || true
 
 WORKDIR /tf/
