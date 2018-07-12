@@ -113,6 +113,7 @@ LDAP_LDIF=${var.ldap_ldif}
 LDAP_TLS_CA=${var.ldap_tls_ca}
 LDAP_TLS_KEY=${var.ldap_tls_key}
 LDAP_TLS_CRT=${var.ldap_tls_crt}
+LDAP_TLS_VERIFY=${var.ldap_tls_verify}
 EOF
   }
 }

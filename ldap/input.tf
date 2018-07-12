@@ -173,6 +173,12 @@ variable "ldap_tls_crt" {
   default = ""
 }
 
+# Indicates how the server handles client-side certificates.
+# Valid values include: never, allow, and try.
+variable "ldap_tls_verify" {
+  default = ""
+}
+
 /*
 https://www.openldap.org/doc/admin24/slapdconfig.html#loglevel%20%3Clevel%3E
 

@@ -9,6 +9,7 @@ LDAP_ORG=${LDAP_ORG:-VMware}
 LDAP_ROOT_USER=${LDAP_ROOT_USER:-root}
 LDAP_ROOT_PASS=${LDAP_ROOT_PASS:-$(slappasswd -h "{SSHA}" -s admin)}
 LDAP_LOG_LEVEL=${LDAP_LOG_LEVEL:-stats}
+LDAP_TLS_VERIFY=${LDAP_TLS_VERIFY:-never}
 LDAP_CONF=${LDAP_CONF:-/etc/openldap/slapd.conf}
 LDAP_DATA=${LDAP_DATA:-/var/lib/openldap/openldap-data}
 
@@ -80,7 +81,7 @@ else
 TLSCACertificateFile  /etc/openldap/tls/ca.pem
 TLSCertificateKeyFile /etc/openldap/tls/key.pem
 TLSCertificateFile    /etc/openldap/tls/crt.pem
-TLSVerifyClient       allow
+TLSVerifyClient       ${LDAP_TLS_VERIFY}
 EOF
 )
 
