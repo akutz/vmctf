@@ -4,7 +4,7 @@
 # verified by https://www.shellcheck.net
 
 # Set defaults.
-LDAP_DOMAIN=${LDAP_DOMAIN:-vmware.local}
+LDAP_DOMAIN=${LDAP_DOMAIN:-vmware.run}
 LDAP_ORG=${LDAP_ORG:-VMware}
 LDAP_ROOT_USER=${LDAP_ROOT_USER:-root}
 LDAP_ROOT_PASS=${LDAP_ROOT_PASS:-$(slappasswd -h "{SSHA}" -s admin)}
