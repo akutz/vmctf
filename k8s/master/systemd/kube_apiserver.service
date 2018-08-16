@@ -1,0 +1,15 @@
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/kubernetes/kubernetes
+After=dns-online.target
+Requires=dns-online.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Restart=on-failure
+RestartSec=5
+WorkingDirectory=${working_directory}
+EnvironmentFile=${env_file}
+ExecStart=${cmd_file} $$APISERVER_OPTS

@@ -4,22 +4,11 @@
 # verified by https://www.shellcheck.net
 
 COMMAND="${1}"
-NAME="${2}"
 
 if [ ! "${COMMAND}" = "deploy" ] && \
    [ ! "${COMMAND}" = "destroy" ]; then \
-   echo "usage: ${0} deploy|destroy NAME"
+   echo "usage: ${0} deploy|destroy"
    exit 1
-fi
-
-if [ -z "${NAME}" ]; then
-  echo "usage: ${0} deploy|destroy NAME"
-  exit 1
-fi
-
-if ! ls "${NAME}"/*.tf >/dev/null 2>&1; then
-  echo "invalid system name"
-  exit 1
 fi
 
 # Use an environment variable file to prevent the process list
@@ -41,13 +30,9 @@ echo_env_var AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
 echo_env_var AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
 echo_env_var AWS_REGION="${AWS_REGION}"
 
-# Find all of the environment variables prefixed with VMCTF_
-for e in $(env | grep VMCTF_); do 
-  n=$(echo "${e}" | sed 's/VMCTF_//g')
-  k=$(echo "${n}" | awk -F= '{print $1}')
-  v=$(echo "${n}" | sed 's/^[^=]*=//g')
-  echo_env_var "${k}=${v}"
-  echo_env_var "TF_VAR_$(echo "${k}" | awk '{print tolower($0)}')=${v}"
+# Find all of the environment variables prefixed with TF_VAR_
+for e in $(env | grep TF_VAR_); do 
+  echo_env_var "${e}"
 done
 
 #if [ "${COMMAND}" = "deploy" ]; then echo "${ENVS_FILE}" && exit 1; fi
@@ -55,10 +40,10 @@ done
 # Launch the container.
 docker run \
   --rm \
-  --name "${CONTAINER_NAME:-vmctf}" \
+  --name "${CONTAINER_NAME:-cnx-cicd}" \
   --env-file "${ENVS_FILE}" \
   -v "$(pwd)/data":/tf/data \
-  vmctf \
+  cnx-cicd \
   "${COMMAND}" \
   "${NAME}"
 

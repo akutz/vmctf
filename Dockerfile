@@ -15,10 +15,7 @@ RUN curl -sSLO \
 RUN mkdir -p /tf
 COPY *.tf entrypoint.sh /tf/
 RUN chmod +x /tf/entrypoint.sh
-
-# Copy the systems into the container
-COPY ldap/ /tf/ldap/
-RUN chmod +x /tf/*/deploy.sh /tf/*/destroy.sh 2> /dev/null || true
+COPY mod/ /tf/mod/
 
 WORKDIR /tf/
 

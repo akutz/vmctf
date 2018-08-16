@@ -1,0 +1,15 @@
+. {
+    log
+    errors
+    etcd ${network_domain} ${network_ipv4_subnet_cidr} {
+        stubzones
+        path /skydns
+        endpoint ${etcd_endpoints}
+        upstream ${network_dns_1}:53 ${network_dns_2}:53
+        tls ${tls_crt} ${tls_key} ${tls_ca}
+    }
+    prometheus
+    cache 160 ${network_domain}
+    loadbalance
+    proxy . ${network_dns_1}:53 ${network_dns_2}:53
+}

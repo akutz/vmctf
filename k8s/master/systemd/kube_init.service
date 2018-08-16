@@ -1,0 +1,17 @@
+[Unit]
+Description=${unit_name}
+After=kube-online.target
+Requires=kube-online.target
+ConditionPathExists=!${working_directory}/.${unit_name}.norun
+
+# Ensure that the service is started.
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+WorkingDirectory=${working_directory}
+EnvironmentFile=${env_file}
+ExecStart=%s ${cmd_file}
+ExecStartPost=/usr/bin/touch "${working_directory}/.${unit_name}.norun"

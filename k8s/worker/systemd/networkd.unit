@@ -1,0 +1,9 @@
+[Match]
+Name=${network_device}
+
+[Network]
+DHCP=${network_dhcp}
+${network_dns}
+Domains=${network_domains}
+Address=${network_ipv4_address}
+Gateway=${network_ipv4_gateway}

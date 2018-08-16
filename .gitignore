@@ -1,4 +1,14 @@
+# Ignore the kubeconfig file created at the root of the project
+/kubeconfig
+
+# Ignore the private TLS files
+/ca.key
+/hack/tls/*.key
+/hack/tls/*.crt
+/hack/tls/*.srl
+
 # Ignore the data directories
+/.terraform/
 /data
 /*/data
 
