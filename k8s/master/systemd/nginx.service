@@ -1,24 +1,17 @@
 [Unit]
 Description=nginx.service
-Documentation=https://hub.docker.com/_/nginx/
-After=network-online.target docker.service
-Requires=network-online.target docker.service
+Documentation=http://bit.ly/howto-build-nginx-for-container-linux
+After=bins.service syslog.target nss-lookup.target
+Requires=bins.service
 
 [Install]
 WantedBy=multi-user.target
 
 [Service]
-PermissionsStartOnly=true
-CapabilityBoundingSet=CAP_NET_BIND_SERVICE
-AmbientCapabilities=CAP_NET_BIND_SERVICE
-NoNewPrivileges=true
-User=${user}
-WorkingDirectory=${working_directory}
-EnvironmentFile=${env_file}
-ExecStartPre=%s -c 'while true; do ping -c1 www.google.com && break; done'
-ExecStartPre=-/usr/bin/docker kill %n
-ExecStartPre=-/usr/bin/docker rm %n
-ExecStartPre=/usr/bin/docker pull nginx:${version}
-ExecStart=/usr/bin/docker $$DOCKER_OPTS
-ExecStop=/usr/bin/docker stop -t 3 %n
-Restart=on-failure
+Type=forking
+PIDFile=${pid_file}
+ExecStartPre=${cmd_file} -t
+ExecStart=${cmd_file}
+ExecReload=${cmd_file} -s reload
+ExecStop=/bin/kill -s QUIT $MAINPID
+PrivateTmp=true

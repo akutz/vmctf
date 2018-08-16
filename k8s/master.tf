@@ -7,6 +7,7 @@ data "ignition_config" "master_config" {
   directories = [
     "${data.ignition_directory.tls_dir.id}",
     "${data.ignition_directory.master_nginx_root.id}",
+    "${data.ignition_directory.master_nginx_log.id}",
     "${data.ignition_directory.master_coredns_root.id}",
     "${data.ignition_directory.master_etcd_root.id}",
     "${data.ignition_directory.master_kube_apiserver_root.id}",
@@ -20,9 +21,8 @@ data "ignition_config" "master_config" {
     "${data.ignition_file.docker_env.id}",
     "${data.ignition_file.tls_ca_crt.id}",
     "${data.ignition_file.tls_ca_key.id}",
+    "${data.ignition_file.master_nginx_conf.id}",
     "${data.ignition_file.master_hostname.*.id[count.index]}",
-    "${data.ignition_file.master_nginx_conf.*.id[count.index]}",
-    "${data.ignition_file.master_nginx_env.*.id[count.index]}",
     "${data.ignition_file.master_bins_env.id}",
     "${data.ignition_file.master_coredns_init_env.*.id[count.index]}",
     "${data.ignition_file.master_coredns_corefile.*.id[count.index]}",
@@ -60,7 +60,7 @@ data "ignition_config" "master_config" {
 
   systemd = [
     "${data.ignition_systemd_unit.docker_service_conf.id}",
-    "${data.ignition_systemd_unit.master_nginx_service.*.id[count.index]}",
+    "${data.ignition_systemd_unit.master_nginx_service.id}",
     "${data.ignition_systemd_unit.master_bins_service.id}",
     "${data.ignition_systemd_unit.master_dns_online_target.id}",
     "${data.ignition_systemd_unit.master_etcd_service.*.id[count.index]}",

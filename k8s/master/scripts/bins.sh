@@ -60,6 +60,13 @@ curl --retry-max-time 120 -L \
 printf '\nfetching %s\n' "${COREDNS_ARTIFACT}"
 curl --retry-max-time 120 -L "${COREDNS_ARTIFACT}" | tar -xzv
 
+################################################################################
+##                                nginx                                       ##
+################################################################################
+NGINX_URL=http://cnx.vmware.s3.amazonaws.com/cicd/container-linux/nginx
+NGINX_ARTIFACT="${NGINX_URL}/${NGINX_VERSION}/nginx.tar.gz"
+printf '\nfetching %s\n' "${NGINX_ARTIFACT}"
+curl --retry-max-time 120 -L "${NGINX_ARTIFACT}" | tar -xzv
 
 ################################################################################
 ##                                main()                                      ##

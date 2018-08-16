@@ -9,6 +9,7 @@ data "template_file" "master_bins_env" {
     etcd_artifact    = "${var.etcd_artifact}"
     k8s_version      = "${var.k8s_version}"
     coredns_artifact = "${var.coredns_artifact}"
+    nginx_version    = "${var.nginx_version}"
   }
 }
 
