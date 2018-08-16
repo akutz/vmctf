@@ -3,16 +3,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 data "ignition_group" "master_coredns" {
   name = "coredns"
-  gid  = "300"
+  gid  = "301"
 }
 
 data "ignition_user" "master_coredns" {
   name           = "coredns"
-  uid            = "300"
+  uid            = "301"
+  home_dir       = "/var/lib/coredns"
   no_create_home = true
   no_user_group  = true
-  system         = true
-  primary_group  = "${data.ignition_group.master_coredns.gid}"
+
+  system        = true
+  primary_group = "${data.ignition_group.master_coredns.gid}"
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20,7 +22,7 @@ data "ignition_user" "master_coredns" {
 ////////////////////////////////////////////////////////////////////////////////
 data "ignition_directory" "master_coredns_root" {
   filesystem = "root"
-  path       = "/var/lib/coredns"
+  path       = "${data.ignition_user.master_coredns.home_dir}"
 
   // mode = 0755
   mode = 493
