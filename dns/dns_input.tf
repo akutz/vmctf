@@ -1,0 +1,65 @@
+////////////////////////////////////////////////////////////////////////////////
+//                                  CoreDNS                                   //
+////////////////////////////////////////////////////////////////////////////////
+variable "count" {
+  default = "2"
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//                                   VM                                       //
+////////////////////////////////////////////////////////////////////////////////
+variable "vm_name" {
+  default = "ns%d"
+}
+
+variable "vm_num_cpu" {
+  default = "8"
+}
+
+variable "vm_num_cores_per_socket" {
+  default = "4"
+}
+
+variable "vm_memory" {
+  default = "65536"
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//                                Networking                                  //
+////////////////////////////////////////////////////////////////////////////////
+variable "network_hostname" {
+  default = "ns%d.%s"
+}
+
+// The IP range for the nameservers is 192.168.2.4-5, 2 hosts.
+//
+// Please see cidrhost at https://www.terraform.io/docs/configuration/interpolation.html 
+// and http://www.rjsmith.com/CIDR-Table.html for more information. 
+variable "network_ipv4_address" {
+  default = "192.168.2.4/30"
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//                              Artifacts                                     //
+////////////////////////////////////////////////////////////////////////////////
+
+// https://github.com/coreos/etcd/releases
+variable "etcd_version" {
+  default = "3.3.9"
+}
+
+// https://github.com/coredns/coredns/releases
+variable "coredns_version" {
+  default = "1.2.0"
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//                                  TLS                                        //
+////////////////////////////////////////////////////////////////////////////////
+variable "tls_ca_crt" {
+  default = ""
+}
+
+variable "tls_ca_key" {
+  default = ""
+}
