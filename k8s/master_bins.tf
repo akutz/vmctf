@@ -14,7 +14,7 @@ data "template_file" "master_bins_env" {
 }
 
 data "template_file" "master_bins_service" {
-  template = "${file("${path.module}/master/systemd/bins.service")}"
+  template = "${file("${path.module}/systemd/bins.service")}"
 
   vars {
     unit_name         = "bins.service"

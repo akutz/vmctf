@@ -7,3 +7,14 @@ ${network_dns}
 Domains=${network_domains}
 Address=${network_ipv4_address}
 Gateway=${network_ipv4_gateway}
+
+# Enable IP forwarding to support forwarding
+# connections to addresses on the pod network.
+IPForward=yes
+
+# Set up the routes required to forward 
+# host traffic to the pod network.
+[Route]
+Gateway=${network_ipv4_gateway}
+Destination=${pod_cidr}
+Source=${network_ipv4_address}

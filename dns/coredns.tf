@@ -132,7 +132,7 @@ data "template_file" "coredns_init_env" {
     bin_dir         = "${data.ignition_directory.bin_dir.path}"
     dns_resolv_conf = "/etc/coredns/resolv.conf"
     dns_servers     = "127.0.0.1"
-    dns_search      = "${var.network_domain}"
+    dns_search      = "${var.network_search_domains}"
     dns_entries     = "${join(" ", data.template_file.dns_entry.*.rendered)}"
     etcd_endpoints  = "https://127.0.0.1:2379"
     tls_crt         = "${data.ignition_file.coredns_tls_crt.*.path[count.index]}"

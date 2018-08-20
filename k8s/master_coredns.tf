@@ -132,8 +132,8 @@ data "template_file" "master_coredns_init_env" {
     bin_dir         = "${data.ignition_directory.bin_dir.path}"
     dns_resolv_conf = "/etc/coredns/resolv.conf"
     dns_servers     = "127.0.0.1"
-    dns_search      = "${var.network_domain}"
-    dns_entries     = "${local.cluster_name}=${join(",", data.template_file.master_network_ipv4_address.*.rendered)} ${join(" ", data.template_file.master_dns_entry.*.rendered)} ${join(" ", data.template_file.worker_dns_entry.*.rendered)}"
+    dns_search      = "${var.network_search_domains}"
+    dns_entries     = "${local.cluster_fqdn}=${join(",", data.template_file.master_network_ipv4_address.*.rendered)} ${join(" ", data.template_file.master_dns_entry.*.rendered)} ${join(" ", data.template_file.worker_dns_entry.*.rendered)}"
     etcd_endpoints  = "https://127.0.0.1:2379"
     tls_crt         = "${data.ignition_file.master_coredns_tls_crt.*.path[count.index]}"
     tls_key         = "${data.ignition_file.master_coredns_tls_key.*.path[count.index]}"
@@ -171,11 +171,6 @@ data "ignition_systemd_unit" "master_coredns_init_service" {
   count   = "${var.master_count}"
   name    = "coredns-init.service"
   content = "${data.template_file.master_coredns_init_service.*.rendered[count.index]}"
-}
-
-data "ignition_systemd_unit" "master_dns_online_target" {
-  name    = "dns-online.target"
-  content = "${file("${path.module}/master/systemd/dns_online.target")}"
 }
 
 ////////////////////////////////////////////////////////////////////////////////

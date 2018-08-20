@@ -14,7 +14,7 @@ data "template_file" "networkd_unit" {
     network_dhcp         = "${var.network_dhcp}"
     network_dns_1        = "${var.network_dns_1}"
     network_dns_2        = "${var.network_dns_2}"
-    network_domains      = "${var.network_domains}"
+    network_domains      = "${var.network_search_domains}"
     network_ipv4_address = "${data.template_file.network_ipv4_address.*.rendered[count.index]}",
     network_ipv4_gateway = "${var.network_ipv4_gateway}"
   }

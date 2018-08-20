@@ -1,8 +1,8 @@
 [Unit]
-Description=Kubernetes Controller Manager
+Description=Kubernetes Kube Proxy
 Documentation=https://github.com/kubernetes/kubernetes
-After=kube-apiserver.service
-Requires=kube-apiserver.service
+After=bins.service
+Requires=bins.service
 
 [Install]
 WantedBy=multi-user.target
@@ -12,4 +12,4 @@ Restart=on-failure
 RestartSec=5
 WorkingDirectory=${working_directory}
 EnvironmentFile=${env_file}
-ExecStart=${cmd_file} $$CONTROLLER_OPTS
+ExecStart=${cmd_file} $$KUBE_PROXY_OPTS

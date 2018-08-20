@@ -1,8 +1,8 @@
 [Unit]
 Description=Kubernetes API Server
 Documentation=https://github.com/kubernetes/kubernetes
-After=dns-online.target
-Requires=dns-online.target
+After=coredns.service coredns-init.service
+Requires=coredns.service coredns-init.service
 
 [Install]
 WantedBy=multi-user.target

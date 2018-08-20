@@ -1,15 +1,15 @@
 [Unit]
-Description=Kubernetes Controller Manager
+Description=Kubernetes Kubelet
 Documentation=https://github.com/kubernetes/kubernetes
-After=kube-apiserver.service
-Requires=kube-apiserver.service
+After=containerd.service
+Requires=containerd.service
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.target  
 
 [Service]
 Restart=on-failure
 RestartSec=5
 WorkingDirectory=${working_directory}
 EnvironmentFile=${env_file}
-ExecStart=${cmd_file} $$CONTROLLER_OPTS
+ExecStart=${cmd_file} $$KUBELET_OPTS

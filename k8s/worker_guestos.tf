@@ -12,10 +12,11 @@ data "template_file" "worker_networkd_unit" {
   vars {
     network_device       = "${var.network_device}"
     network_dhcp         = "${var.network_dhcp}"
-    network_domains      = "${var.network_domains}"
+    network_domains      = "${var.network_search_domains}"
     network_ipv4_address = "${data.template_file.worker_network_ipv4_address.*.rendered[count.index]}"
     network_ipv4_gateway = "${var.network_ipv4_gateway}"
     network_dns          = "${join("\n", formatlist("DNS=%s", data.template_file.master_network_ipv4_address.*.rendered))}"
+    pod_cidr             = "${data.template_file.worker_pod_cidr.*.rendered[count.index]}/24"
   }
 }
 

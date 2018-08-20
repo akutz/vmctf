@@ -1,9 +1,0 @@
-[Unit]
-Description=dns-online.target
-After=coredns.service coredns-init.service
-Requires=coredns.service coredns-init.service
-AllowIsolate=yes
-
-# Ensure that the DNS server is online.
-[Install]
-WantedBy=multi-user.target

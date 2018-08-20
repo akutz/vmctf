@@ -68,7 +68,7 @@ data "template_file" "master_nginx_conf" {
   vars {
     user                   = "nginx"
     pid_file               = "/var/run/nginx.pid"
-    server_name            = "${local.cluster_name}"
+    server_name            = "${local.cluster_fqdn}"
     master_api_secure_port = "${var.master_api_secure_port}"
     tls_ca_crt             = "${data.ignition_file.tls_ca_crt.path}"
   }

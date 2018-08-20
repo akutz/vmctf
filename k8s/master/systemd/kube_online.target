@@ -1,9 +1,0 @@
-[Unit]
-Description=kube-online.target
-After=kube-apiserver.service kube-controller-manager.service kube-scheduler.service
-Requires=kube-apiserver.service kube-controller-manager.service kube-scheduler.service
-AllowIsolate=yes
-
-# Ensure that the K8s components are online.
-[Install]
-WantedBy=multi-user.target

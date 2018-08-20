@@ -46,6 +46,46 @@ curl --retry-max-time 120 -L \
   'kubernetes/node/bin/*'
 
 ################################################################################
+##                                crictl                                      ##
+################################################################################
+CRICTL_URL=https://github.com/kubernetes-incubator/cri-tools/releases/download
+CRICTL_ARTIFACT="${CRICTL_URL}/v${CRICTL_VERSION}/crictl-v${CRICTL_VERSION}-linux-amd64.tar.gz"
+printf '\nfetching %s\n' "${CRICTL_ARTIFACT}"
+curl --retry-max-time 120 -L "${CRICTL_ARTIFACT}" | tar -xzv
+
+################################################################################
+##                                 runc                                       ##
+################################################################################
+RUNC_URL=https://github.com/opencontainers/runc/releases/download
+RUNC_ARTIFACT="${RUNC_URL}/v${RUNC_VERSION}/runc.amd64"
+printf '\nfetching %s\n' "${RUNC_ARTIFACT}"
+curl --retry-max-time 120 -Lo "${BIN_DIR}/runc" "${RUNC_ARTIFACT}"
+
+################################################################################
+##                                 runsc                                      ##
+################################################################################
+RUNSC_URL=https://storage.googleapis.com/gvisor/releases/nightly
+RUNSC_ARTIFACT="${RUNSC_URL}/${RUNSC_VERSION}/runsc"
+printf '\nfetching %s\n' "${RUNSC_ARTIFACT}"
+curl --retry-max-time 120 -LO "${RUNSC_ARTIFACT}"
+
+################################################################################
+##                              CNI plug-ins                                  ##
+################################################################################
+CNI_PLUGINS_URL=https://github.com/containernetworking/plugins/releases/download
+CNI_PLUGINS_ARTIFACT="${CNI_PLUGINS_URL}/v${CNI_PLUGINS_VERSION}/cni-plugins-amd64-v${CNI_PLUGINS_VERSION}.tgz"
+printf '\nfetching %s\n' "${CNI_PLUGINS_ARTIFACT}"
+curl --retry-max-time 120 -L "${CNI_PLUGINS_ARTIFACT}" | tar -xzvC "${CNI_BIN_DIR}"
+
+################################################################################
+##                               ContainerD                                   ##
+################################################################################
+CONTAINERD_URL=https://github.com/containerd/containerd/releases/download
+CONTAINERD_ARTIFACT="${CONTAINERD_URL}/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}.linux-amd64.tar.gz"
+printf '\nfetching %s\n' "${CONTAINERD_ARTIFACT}"
+curl --retry-max-time 120 -L "${CONTAINERD_ARTIFACT}" | tar -xzv --strip-components=1
+
+################################################################################
 ##                                main()                                      ##
 ################################################################################
 # Mark all the files in the working directory:
