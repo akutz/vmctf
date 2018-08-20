@@ -1,7 +1,7 @@
 [Unit]
 Description=${unit_name}
-After=kube-online.target
-Requires=kube-online.target
+After=kube-apiserver.service kube-controller-manager.service kube-scheduler.service
+Requires=kube-apiserver.service kube-controller-manager.service kube-scheduler.service
 ConditionPathExists=!${working_directory}/.${unit_name}.norun
 
 # Ensure that the service is started.

@@ -1,8 +1,8 @@
 [Unit]
 Description=Kubernetes Scheduler
 Documentation=https://github.com/kubernetes/kubernetes
-After=dns-online.target kube-apiserver.service
-Requires=dns-online.target kube-apiserver.service
+After=kube-apiserver.service
+Requires=kube-apiserver.service
 
 [Install]
 WantedBy=multi-user.target

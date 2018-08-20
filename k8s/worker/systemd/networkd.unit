@@ -7,3 +7,19 @@ ${network_dns}
 Domains=${network_domains}
 Address=${network_ipv4_address}
 Gateway=${network_ipv4_gateway}
+
+# Commenting out the rest of this file is okay when
+# a Kuberentes network implementation like Calico is
+# in place. Otherwise the below config makes it
+# possible for pods to communicate with the host
+# network.
+
+# Enable IP forwarding to support forwarding
+# connections to addresses on the pod network.
+IPForward=yes
+
+# Set up the routes required to forward 
+# host traffic to the pod network.
+[Route]
+Destination=${pod_cidr}
+PreferredSource=${network_ipv4_address}

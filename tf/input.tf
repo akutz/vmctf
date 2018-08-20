@@ -30,7 +30,7 @@ variable "os_seed_gid" {
 
 // The FQDN of the domain to which all hosts should belong.
 variable "network_domain" {
-  default = "cicd.cnx.cna.vmware.run"
+  default = "vmware.ci"
 }
 
 // The name of the first network device in VMs provisioned from the CoreOS
@@ -54,8 +54,8 @@ variable "network_dns_2" {
 }
 
 // A space-separated list of search domains.
-variable "network_domains" {
-  default = "cicd.cnx.cna.vmware.run"
+variable "network_search_domains" {
+  default = "vmware.ci"
 }
 
 // Per https://www.freedesktop.org/software/systemd/man/systemd.network.html
@@ -78,6 +78,10 @@ variable "vsphere_password" {}
 
 variable "vsphere_server" {
   default = "vcenter.sddc-54-70-161-229.vmc.vmware.com"
+}
+
+variable "vsphere_server_port" {
+  default = "443"
 }
 
 variable "vsphere_allow_unverified_ssl" {

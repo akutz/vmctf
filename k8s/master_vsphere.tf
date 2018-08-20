@@ -14,7 +14,7 @@ locals {
   ]
 }
 
-resource "vsphere_virtual_machine" "master_virtual_machine" {
+resource "vsphere_virtual_machine" "master" {
   count = "${var.master_count}"
 
   name = "${format(var.master_vm_name, count.index+1)}"
@@ -27,6 +27,9 @@ resource "vsphere_virtual_machine" "master_virtual_machine" {
   num_cpus             = "${var.master_vm_num_cpu}"
   num_cores_per_socket = "${var.master_vm_num_cores_per_socket}"
   memory               = "${var.master_vm_memory}"
+
+  // Required by the vSphere cloud provider
+  enable_disk_uuid = true
 
   network_interface {
     network_id   = "${data.vsphere_network.network.id}"

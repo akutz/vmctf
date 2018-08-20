@@ -13,15 +13,15 @@ variable "vm_name" {
 }
 
 variable "vm_num_cpu" {
-  default = "8"
-}
-
-variable "vm_num_cores_per_socket" {
   default = "4"
 }
 
+variable "vm_num_cores_per_socket" {
+  default = "2"
+}
+
 variable "vm_memory" {
-  default = "65536"
+  default = "16384"
 }
 
 ////////////////////////////////////////////////////////////////////////////////
