@@ -27,7 +27,12 @@ data "template_file" "master_network_ipv4_address" {
 
 data "template_file" "master_network_hostname" {
   count    = "${var.master_count}"
-  template = "${format(var.master_network_hostname, count.index+1, var.network_domain)}"
+  template = "${format(var.master_network_hostname, count.index+1)}.${var.network_domain}"
+}
+
+data "template_file" "master_nodename" {
+  count    = "${var.master_count}"
+  template = "${format(var.master_network_hostname, count.index+1)}"
 }
 
 data "template_file" "master_dns_entry" {

@@ -24,7 +24,7 @@ resource "tls_cert_request" "worker_kubelet" {
   private_key_pem = "${tls_private_key.worker_kubelet.*.private_key_pem[count.index]}"
 
   subject {
-    common_name         = "system:node:${data.template_file.worker_network_hostname.*.rendered[count.index]}"
+    common_name         = "system:node:${data.template_file.worker_nodename.*.rendered[count.index]}"
     organization        = "system:nodes"
     organizational_unit = "${local.tls_subj_organizational_unit}"
     country             = "${local.tls_subj_country}"
@@ -37,6 +37,7 @@ resource "tls_cert_request" "worker_kubelet" {
   ]
 
   dns_names = [
+    "${data.template_file.worker_nodename.*.rendered[count.index]}",
     "${data.template_file.worker_network_hostname.*.rendered[count.index]}",
   ]
 }
@@ -92,8 +93,8 @@ data "template_file" "worker_kubelet_config" {
 
   vars {
     tls_ca          = "${data.ignition_file.tls_ca_crt.path}"
-    cluster_domain  = "${local.cluster_fqdn}"
-    cluster_dns     = "${local.cluster_dns}"
+    cluster_domain  = "${var.network_domain}"
+    cluster_dns     = "${local.dns_cluster_ip}"
     pod_cidr        = "${data.template_file.worker_pod_cidr.*.rendered[count.index]}"
     kubelet_tls_crt = "${data.ignition_file.worker_kubelet_tls_crt.*.path[count.index]}"
     kubelet_tls_key = "${data.ignition_file.worker_kubelet_tls_key.*.path[count.index]}"
@@ -124,7 +125,7 @@ data "template_file" "worker_kubelet_kubeconfig" {
     tls_ca       = "${base64encode(local.tls_ca_crt)}"
     public_fqdn  = "https://${local.cluster_fqdn}:${var.master_api_secure_port}"
     cluster_name = "${local.cluster_fqdn}"
-    user_name    = "system:node:${data.template_file.worker_network_hostname.*.rendered[count.index]}"
+    user_name    = "system:node:${data.template_file.worker_nodename.*.rendered[count.index]}"
     tls_user_crt = "${base64encode(tls_locally_signed_cert.worker_kubelet.*.cert_pem[count.index])}"
     tls_user_key = "${base64encode(tls_private_key.worker_kubelet.*.private_key_pem[count.index])}"
   }
@@ -151,12 +152,17 @@ data "template_file" "worker_kubelet_env" {
   template = "${file("${path.module}/worker/etc/kubelet.env")}"
 
   vars {
+    client_ca_file             = "${data.ignition_file.tls_ca_crt.path}"
     cloud_config               = "${data.ignition_file.vsphere_cloud_provider_conf.path}"
+    cluster_domain             = "${var.network_domain}"
+    cluster_dns                = "${local.dns_cluster_ip}"
     cni_bin_dir                = "${data.ignition_directory.worker_cni_bin_dir.path}"
     config                     = "${data.ignition_file.worker_kubelet_config.*.path[count.index]}"
-    container_runtime_endpoint = "${local.worker_containerd_sock_file}"
+    container_runtime_endpoint = "unix://${data.ignition_directory.worker_containerd_state_dir.path}/containerd.sock"
     kubeconfig                 = "${data.ignition_file.worker_kubelet_kubeconfig.*.path[count.index]}"
     network_plugin             = "cni"
+    tls_cert_file              = "${data.ignition_file.worker_kubelet_tls_crt.*.path[count.index]}"
+    tls_private_key_file       = "${data.ignition_file.worker_kubelet_tls_key.*.path[count.index]}"
   }
 }
 
@@ -186,6 +192,6 @@ data "template_file" "worker_kubelet_service" {
 
 data "ignition_systemd_unit" "worker_kubelet_service" {
   count   = "${var.worker_count}"
-  name    = "kubelet.service"
+  name    = "kubelet_.service"
   content = "${data.template_file.worker_kubelet_service.*.rendered[count.index]}"
 }

@@ -1,4 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////
+//                                  Global                                    //
+////////////////////////////////////////////////////////////////////////////////
+
+// Enables debug functionality in parts of the deployment, such as causing
+// shell scripts to enable set -x.
+variable "debug" {
+  default = "false"
+}
+
+////////////////////////////////////////////////////////////////////////////////
 //                                 Guest OS                                   //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -65,7 +75,7 @@ variable "network_search_domains" {
 //variable "network_ipv4_address" {}
 
 variable "network_ipv4_gateway" {
-  default = "192.168.2.1"
+  default = "192.168.3.1"
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -110,7 +120,7 @@ variable "vsphere_folder" {
 
 // The name of the vSphere network to which the VMs' NICs will be attached.
 variable "vsphere_network" {
-  default = "VMC Networks/sddc-cgw-network-2"
+  default = "VMC Networks/sddc-cgw-network-3"
 }
 
 // The path of the template to use when cloning.

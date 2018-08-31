@@ -27,7 +27,12 @@ data "template_file" "worker_network_ipv4_address" {
 
 data "template_file" "worker_network_hostname" {
   count    = "${var.worker_count}"
-  template = "${format(var.worker_network_hostname, count.index+1, var.network_domain)}"
+  template = "${format(var.worker_network_hostname, count.index+1)}.${var.network_domain}"
+}
+
+data "template_file" "worker_nodename" {
+  count    = "${var.worker_count}"
+  template = "${format(var.worker_network_hostname, count.index+1)}"
 }
 
 data "template_file" "worker_dns_entry" {

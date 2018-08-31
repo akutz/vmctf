@@ -10,12 +10,15 @@ data "ignition_config" "worker_config" {
     "${data.ignition_directory.worker_cni_bin_dir.id}",
     "${data.ignition_directory.worker_cni_netd_dir.id}",
     "${data.ignition_directory.worker_containerd_etc_dir.id}",
+    "${data.ignition_directory.worker_containerd_root_dir.id}",
+    "${data.ignition_directory.worker_containerd_state_dir.id}",
     "${data.ignition_directory.worker_kube_proxy_root.id}",
     "${data.ignition_directory.worker_kubelet_root.id}",
     "${data.ignition_directory.worker_runsc_root_dir.id}",
   ]
 
   files = [
+    //"${data.ignition_file.docker_env.id}",
     "${data.ignition_file.path_sh.id}",
     "${data.ignition_file.sshd_config.id}",
     "${data.ignition_file.tls_ca_crt.id}",
@@ -42,6 +45,7 @@ data "ignition_config" "worker_config" {
   ]
 
   systemd = [
+    //"${data.ignition_systemd_unit.docker_service_conf.id}",
     "${data.ignition_systemd_unit.worker_bins_service.id}",
     "${data.ignition_systemd_unit.worker_containerd_service.id}",
     "${data.ignition_systemd_unit.worker_kube_proxy_service.id}",

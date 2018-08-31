@@ -2,10 +2,11 @@
 //                                Globals                                     //
 ////////////////////////////////////////////////////////////////////////////////
 locals {
-  cluster_fqdn = "${format(var.cluster_name, var.network_domain)}"
-  cluster_dns  = "10.32.0.10"
-  tls_ca_key   = "${file("${path.module}/../ca.key")}"
-  tls_ca_crt   = "${file("${path.module}/../ca.crt")}"
+  cluster_fqdn   = "${var.cluster_name}.${var.network_domain}"
+  tls_ca_key     = "${file("${path.module}/../ca.key")}"
+  tls_ca_crt     = "${file("${path.module}/../ca.crt")}"
+  cluster_ip     = "${cidrhost(var.service_cluster_ip_range, "1")}"
+  dns_cluster_ip = "${cidrhost(var.service_cluster_ip_range, "10")}"
 }
 
 // master_pod_cidr is reserved for future use in case workloads are scheduled

@@ -20,6 +20,6 @@ IPForward=yes
 
 # Set up the routes required to forward 
 # host traffic to the pod network.
-[Route]
-Destination=${pod_cidr}
-PreferredSource=${network_ipv4_address}
+#[Route]
+#Destination=${pod_cidr}
+#PreferredSource=${network_ipv4_address}

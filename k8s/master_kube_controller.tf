@@ -84,7 +84,7 @@ data "template_file" "master_kube_controller_manager_env" {
     address                     = "0.0.0.0"
     cloud_config                = "${data.ignition_file.vsphere_cloud_provider_conf.path}"
     cluster_cidr                = "${var.cluster_cidr}"
-    cluster_name                = "${local.cluster_fqdn}"
+    cluster_name                = "${var.cluster_name}"
     cluster_signing_cert_file   = "${data.ignition_file.tls_ca_crt.path}"
     cluster_signing_key_file    = "${data.ignition_file.tls_ca_key.path}"
     kubeconfig                  = "${data.ignition_file.master_kube_controller_manager_kubeconfig.path}"

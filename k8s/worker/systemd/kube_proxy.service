@@ -1,8 +1,8 @@
 [Unit]
 Description=Kubernetes Kube Proxy
 Documentation=https://github.com/kubernetes/kubernetes
-After=bins.service
-Requires=bins.service
+After=bins.service kubelet_.service
+Requires=bins.service kubelet_.service
 
 [Install]
 WantedBy=multi-user.target

@@ -22,7 +22,6 @@ data "ignition_user" "users" {
 
   groups = [
     "wheel",
-    "docker",
     "sudo",
   ]
 

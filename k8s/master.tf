@@ -16,9 +16,9 @@ data "ignition_config" "master_config" {
   ]
 
   files = [
+    //"${data.ignition_file.docker_env.id}",
     "${data.ignition_file.path_sh.id}",
     "${data.ignition_file.sshd_config.id}",
-    //"${data.ignition_file.docker_env.id}",
     "${data.ignition_file.tls_ca_crt.id}",
     "${data.ignition_file.tls_ca_key.id}",
     "${data.ignition_file.vsphere_cloud_provider_conf.id}",
@@ -53,6 +53,7 @@ data "ignition_config" "master_config" {
     "${data.ignition_file.master_kubeconfig.id}",
     "${data.ignition_file.master_kube_apiserver_tls_crt.id}",
     "${data.ignition_file.master_kube_apiserver_tls_key.id}",
+    "${data.ignition_file.master_kube_dns_config.id}",
   ]
 
   networkd = [

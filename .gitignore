@@ -1,6 +1,9 @@
 # Ignore the kubeconfig file created at the root of the project
 /kubeconfig
 
+# Do not commit any secure files.
+secure.auto.tfvars
+
 # Ignore the private TLS files
 /ca.key
 /hack/tls/*.key
@@ -11,6 +14,12 @@
 /.terraform/
 /data
 /*/data
+
+# Ignore the dev dir "centos"
+/centos
+
+# Ignore the disabled tf files
+/tf/*.*.*
 
 # Created by https://www.gitignore.io
 

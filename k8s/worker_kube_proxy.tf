@@ -130,6 +130,6 @@ data "template_file" "worker_kube_proxy_service" {
 }
 
 data "ignition_systemd_unit" "worker_kube_proxy_service" {
-  name    = "kube-proxy.service"
+  name    = "kube-proxy_.service"
   content = "${data.template_file.worker_kube_proxy_service.rendered}"
 }

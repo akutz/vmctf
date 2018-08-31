@@ -1,0 +1,447 @@
+#cloud-config
+
+# Configured according to 0.7.9 config schema:
+# http://bit.ly/cloud-init-0-7-9-examples
+
+groups:
+  - k8s-admin
+
+users:
+  - name: etcd
+    system: true
+    no-user-group: true
+    homedir: /var/lib/etcd
+
+  - name: coredns
+    system: true
+    no-user-group: true
+    homedir: /var/lib/coredns
+
+  - name: nginx
+    system: true
+    no-user-group: true
+    homedir: /var/lib/nginx
+
+${users}
+
+write_files:
+  - path: /etc/NetworkManager/conf.d/00-do-not-manage-dns.conf
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${network_manager_dns_disabled}
+
+  - path: /etc/default/path
+    owner: root:root
+    permissions: 0444
+    content: |
+      PATH=/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+  - path: /etc/sysconfig/iptables
+    owner: root:root
+    permissions: 0640
+    encoding: gzip
+    content: !!binary |
+      ${iptables}
+
+  - path: /etc/sysconfig/ip6tables
+    owner: root:root
+    permissions: 0640
+    encoding: gzip
+    content: !!binary |
+      ${iptables}
+
+  - path: /var/lib/kubernetes/kube-dns-podspec.yaml
+    owner: root:root
+    permissions: 0640
+    encoding: gzip
+    content: !!binary |
+      ${kube_dns_podspec}
+
+  - path: /var/lib/kubernetes/cloud-provider.config
+    owner: root:root
+    permissions: 0400
+    encoding: gzip
+    content: !!binary |
+      ${cloud_provider_config}
+
+  - path: /etc/profile.d/kubeconfig.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${kubeconfig_sh}
+
+  - path: /etc/ssl/ca.crt
+    owner: root:root
+    permissions: 0444
+    encoding: gzip
+    content: !!binary |
+      ${tls_ca_crt}
+
+  - path: /etc/ssl/ca.key
+    owner: root:root
+    permissions: 0400
+    encoding: gzip
+    content: !!binary |
+      ${tls_ca_key}
+
+  - path: /opt/bin/defaults.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${defaults_sh}
+
+  - path: /etc/systemd/system/defaults.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${defaults_service}
+
+  - path: /opt/bin/newcert.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${newcert_sh}
+
+  - path: /etc/default/gencerts
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${gencerts_env}
+
+  - path: /opt/bin/gencerts.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${gencerts_sh}
+
+  - path: /etc/default/genkcfgs
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${genkcfgs_env}
+
+  - path: /opt/bin/genkcfgs.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${genkcfgs_sh}
+
+  - path: /etc/default/bins
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${bins_env}
+
+  - path: /opt/bin/bins.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${bins_sh}
+
+  - path: /etc/systemd/system/bins.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${bins_service}
+
+  - path: /etc/default/etcd-init-pre
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${etcd_init_pre_env}
+
+  - path: /etc/systemd/system/etcd-init-pre.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${etcd_init_pre_service}
+
+  - path: /etc/default/etcd
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${etcd_env}
+
+  - path: /etc/systemd/system/etcd.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${etcd_service}
+
+  - path: /opt/bin/etcd-init-post.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${etcd_init_post_sh}
+
+  - path: /etc/default/etcd-init-post
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${etcd_init_post_env}
+
+  - path: /etc/systemd/system/etcd-init-post.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${etcd_init_post_service}
+
+  - path: /etc/default/etcdctl
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${etcdctl_env}
+
+  - path: /etc/profile.d/etcdctl.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${etcdctl_sh}
+
+  - path: /etc/profile.d/path.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${path_sh}
+
+  - path: /etc/profile.d/prompt.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${prompt_sh}
+
+  - path: /etc/coredns/etcd.conf
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${coredns_corefile}
+
+  - path: /etc/default/coredns-init
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${coredns_init_env}
+
+  - path: /opt/bin/coredns-init.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${coredns_init_sh}
+
+  - path: /etc/systemd/system/coredns-init.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${coredns_init_service}
+
+  - path: /etc/systemd/system/coredns.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${coredns_service}
+
+  - path: /etc/nginx/nginx.conf
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${nginx_conf}
+
+  - path: /etc/systemd/system/nginx.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${nginx_service}
+
+  - path: /opt/bin/handle-worker-signals.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${handle_worker_signals_sh}
+
+  - path: /etc/default/handle-worker-signals
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${handle_worker_signals_env}
+
+  - path: /etc/systemd/system/handle-worker-signals.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${handle_worker_signals_service}
+
+  - path: /etc/default/kube-init-pre
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kube_init_pre_env}
+
+  - path: /opt/bin/kube-init-pre.sh
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kube_init_pre_sh}
+
+  - path: /etc/systemd/system/kube-init-pre.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kube_init_pre_service}
+
+  - path: /etc/default/kube-init-post
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kube_init_post_env}
+
+  - path: /opt/bin/kube-init-post.sh
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kube_init_post_sh}
+
+  - path: /etc/systemd/system/kube-init-post.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kube_init_post_service}
+
+  - path: /var/lib/kubernetes/encryption-config.yaml
+    owner: root:root
+    permissions: 0400
+    encoding: gzip
+    content: !!binary |
+      ${k8s_encryption_config}
+
+  - path: /etc/default/kube-apiserver
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kube_apiserver_env}
+
+  - path: /etc/systemd/system/kube-apiserver.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kube_apiserver_service}
+
+  - path: /etc/default/kube-controller-manager
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kube_controller_manager_env}
+
+  - path: /etc/systemd/system/kube-controller-manager.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kube_controller_manager_service}
+
+  - path: /etc/default/kube-scheduler
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kube_scheduler_env}
+
+  - path: /var/lib/kube-scheduler/kube-scheduler-config.yaml
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kube_scheduler_config}
+
+  - path: /etc/systemd/system/kube-scheduler.service
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kube_scheduler_service}
+
+runcmd:
+  - [ mkdir, -p, /var/lib/etcd/data ]
+  - [ chown, etcd, /var/lib/etcd, /var/lib/etcd/data ]
+
+  - [ mkdir, -p, /var/lib/coredns ]
+  - [ chown, coredns, /var/lib/coredns ]
+
+  - [ mkdir, -p, /var/lib/nginx, /var/log/nginx ]
+  - [ chown, nginx, /var/lib/nginx, /var/log/nginx ]
+
+  - [ mkdir, -p, /var/lib/kubernetes,
+                 /var/lib/kube-apiserver,
+                 /var/lib/kube-scheduler,
+                 /var/lib/kube-controller-manager ]
+
+  - [ systemctl, daemon-reload ]
+
+  - [ systemctl, restart, iptables, ip6tables ]
+
+  - [ systemctl, enable, defaults.service,
+                         bins.service,
+                         etcd-init-pre.service,
+                         etcd.service,
+                         etcd-init-post.service,
+                         coredns-init.service,
+                         coredns.service,
+                         nginx.service,
+                         handle-worker-signals.service,
+                         kube-init-pre.service,
+                         kube-apiserver.service,
+                         kube-controller-manager.service,
+                         kube-scheduler.service,
+                         kube-init-post.service ]
+
+  - [ systemctl, start, handle-worker-signals.service,
+                        kube-init-post.service,
+                        kube-controller-manager.service,
+                        kube-scheduler.service ]
+
+# Commented out unless needed.
+packages:
+  - lsof
+  - bind-utils

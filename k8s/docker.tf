@@ -23,7 +23,7 @@ data "ignition_systemd_unit" "docker_service_conf" {
   dropin = [
     {
       name    = "docker.conf"
-      content = "[Service]\nEnvironmentFile=${data.ignition_file.docker_env.path}"
+      content = "[Service]\nEnvironmentFile=${data.ignition_file.docker_env.path}\n"
     },
   ]
 }

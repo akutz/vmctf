@@ -11,6 +11,7 @@ data "template_file" "master_kube_init_env" {
     tls_key        = "${data.ignition_file.master_kube_apiserver_tls_key.path}"
     tls_ca         = "${data.ignition_file.tls_ca_crt.path}"
     kubeconfig     = "${data.ignition_file.master_kubeconfig.path}"
+    cluster_admin  = "${var.cluster_admin}"
   }
 }
 
@@ -26,7 +27,6 @@ data "ignition_file" "master_kube_init_env" {
   }
 }
 
-
 data "ignition_file" "master_kube_init_sh" {
   filesystem = "root"
   path       = "${data.ignition_directory.bin_dir.path}/kube_init.sh"
@@ -38,7 +38,6 @@ data "ignition_file" "master_kube_init_sh" {
     content = "${file("${path.module}/master/scripts/kube_init.sh")}"
   }
 }
-
 
 data "template_file" "master_kube_init_service" {
   template = "${file("${path.module}/master/systemd/kube_init.service")}"

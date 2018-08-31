@@ -19,13 +19,18 @@ variable "worker_count" {
 }
 
 variable "cluster_name" {
-  default = "k8s.%s"
+  default = "k8s"
+}
+
+variable "cluster_admin" {
+  default = "kubernetes"
 }
 
 // A list of DNS SANs to add to the cluster's TLS certificate
 variable "cluster_sans_dns_names" {
   default = [
     "api.cicd.cnx.cna.vmware.run",
+    "k8s.default.svc.vmware.ci",
   ]
 }
 
@@ -91,11 +96,11 @@ variable "worker_vm_memory" {
 //                                Networking                                  //
 ////////////////////////////////////////////////////////////////////////////////
 variable "master_network_hostname" {
-  default = "k8s-m%02d.%s"
+  default = "k8s-m%02d"
 }
 
 variable "worker_network_hostname" {
-  default = "k8s-w%02d.%s"
+  default = "k8s-w%02d"
 }
 
 // The IP range for masters is 192.168.2.128-191, 63 hosts.

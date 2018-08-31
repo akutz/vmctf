@@ -79,7 +79,7 @@ resource "tls_cert_request" "master_kube_apiserver" {
   private_key_pem = "${tls_private_key.master_kube_apiserver.private_key_pem}"
 
   subject {
-    common_name         = "${local.cluster_fqdn}"
+    common_name         = "${var.cluster_admin}"
     organization        = "${local.tls_subj_organization}"
     organizational_unit = "${local.tls_subj_organizational_unit}"
     country             = "${local.tls_subj_country}"
@@ -88,11 +88,11 @@ resource "tls_cert_request" "master_kube_apiserver" {
   }
 
   ip_addresses = [
-    "${concat(list("127.0.0.1"), data.template_file.master_network_ipv4_address.*.rendered)}",
+    "${concat(list("127.0.0.1", local.cluster_ip), data.template_file.master_network_ipv4_address.*.rendered)}",
   ]
 
   dns_names = [
-    "${concat(list(local.cluster_fqdn), data.template_file.master_network_hostname.*.rendered, var.cluster_sans_dns_names)}",
+    "${concat(list(local.cluster_fqdn), data.template_file.master_network_hostname.*.rendered, data.template_file.master_nodename.*.rendered, var.cluster_sans_dns_names)}",
   ]
 }
 

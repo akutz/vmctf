@@ -104,7 +104,7 @@ roleRef:
 subjects:
   - apiGroup: rbac.authorization.k8s.io
     kind: User
-    name: kubernetes
+    name: ${CLUSTER_ADMIN}
 EOF
 
 # Indicate the script has completed
