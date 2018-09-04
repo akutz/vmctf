@@ -54,8 +54,7 @@ locals {
 [Unit]
 Description=nginx.service
 Documentation=http://bit.ly/howto-build-nginx-for-container-linux
-After=bins.service syslog.target nss-lookup.target
-Requires=bins.service
+After=syslog.target nss-lookup.target
 
 [Install]
 WantedBy=multi-user.target

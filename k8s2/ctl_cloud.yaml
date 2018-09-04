@@ -25,9 +25,23 @@ users:
 ${users}
 
 write_files:
-  - path: /etc/NetworkManager/conf.d/00-do-not-manage-dns.conf
+  - path: /etc/default/defaults
     owner: root:root
     permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${defaults_env}
+
+  - path: /opt/bin/controller-first-boot.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${controller_first_boot_sh}
+
+  - path: /etc/NetworkManager/conf.d/00-do-not-manage-dns.conf
+    owner: root:root
+    permissions: 0440
     encoding: gzip
     content: !!binary |
       ${network_manager_dns_disabled}
@@ -40,14 +54,14 @@ write_files:
 
   - path: /etc/sysconfig/iptables
     owner: root:root
-    permissions: 0640
+    permissions: 0440
     encoding: gzip
     content: !!binary |
       ${iptables}
 
   - path: /etc/sysconfig/ip6tables
     owner: root:root
-    permissions: 0640
+    permissions: 0440
     encoding: gzip
     content: !!binary |
       ${iptables}
@@ -87,19 +101,19 @@ write_files:
     content: !!binary |
       ${tls_ca_key}
 
-  - path: /opt/bin/defaults.sh
-    owner: root:root
-    permissions: 0755
-    encoding: gzip
-    content: !!binary |
-      ${defaults_sh}
+#  - path: /opt/bin/defaults.sh
+#    owner: root:root
+#    permissions: 0755
+#    encoding: gzip
+#    content: !!binary |
+#      ${defaults_sh}
 
-  - path: /etc/systemd/system/defaults.service
-    owner: root:root
-    permissions: 0644
-    encoding: gzip
-    content: !!binary |
-      ${defaults_service}
+#  - path: /opt/systemd/defaults.service
+#    owner: root:root
+#    permissions: 0644
+#    encoding: gzip
+#    content: !!binary |
+#      ${defaults_service}
 
   - path: /opt/bin/newcert.sh
     owner: root:root
@@ -143,33 +157,33 @@ write_files:
     content: !!binary |
       ${bins_env}
 
-  - path: /opt/bin/bins.sh
-    owner: root:root
-    permissions: 0755
-    encoding: gzip
-    content: !!binary |
-      ${bins_sh}
+#  - path: /opt/bin/bins.sh
+#    owner: root:root
+#    permissions: 0755
+#    encoding: gzip
+#    content: !!binary |
+#      ${bins_sh}
 
-  - path: /etc/systemd/system/bins.service
-    owner: root:root
-    permissions: 0644
-    encoding: gzip
-    content: !!binary |
-      ${bins_service}
+#  - path: /opt/systemd/bins.service
+#    owner: root:root
+#    permissions: 0644
+#    encoding: gzip
+#    content: !!binary |
+#      ${bins_service}
 
-  - path: /etc/default/etcd-init-pre
-    owner: root:root
-    permissions: 0644
-    encoding: gzip
-    content: !!binary |
-      ${etcd_init_pre_env}
+#  - path: /etc/default/etcd-init-pre
+#    owner: root:root
+#    permissions: 0644
+#    encoding: gzip
+#    content: !!binary |
+#      ${etcd_init_pre_env}
 
-  - path: /etc/systemd/system/etcd-init-pre.service
-    owner: root:root
-    permissions: 0644
-    encoding: gzip
-    content: !!binary |
-      ${etcd_init_pre_service}
+#  - path: /opt/systemd/etcd-init-pre.service
+#    owner: root:root
+#    permissions: 0644
+#    encoding: gzip
+#    content: !!binary |
+#      ${etcd_init_pre_service}
 
   - path: /etc/default/etcd
     owner: root:root
@@ -178,7 +192,7 @@ write_files:
     content: !!binary |
       ${etcd_env}
 
-  - path: /etc/systemd/system/etcd.service
+  - path: /opt/systemd/etcd.service
     owner: root:root
     permissions: 0644
     encoding: gzip
@@ -192,14 +206,14 @@ write_files:
     content: !!binary |
       ${etcd_init_post_sh}
 
-  - path: /etc/default/etcd-init-post
-    owner: root:root
-    permissions: 0644
-    encoding: gzip
-    content: !!binary |
-      ${etcd_init_post_env}
+#  - path: /etc/default/etcd-init-post
+#    owner: root:root
+#    permissions: 0644
+#    encoding: gzip
+#    content: !!binary |
+#      ${etcd_init_post_env}
 
-  - path: /etc/systemd/system/etcd-init-post.service
+  - path: /opt/systemd/etcd-init-post.service
     owner: root:root
     permissions: 0644
     encoding: gzip
@@ -255,14 +269,14 @@ write_files:
     content: !!binary |
       ${coredns_init_sh}
 
-  - path: /etc/systemd/system/coredns-init.service
+  - path: /opt/systemd/coredns-init.service
     owner: root:root
     permissions: 0644
     encoding: gzip
     content: !!binary |
       ${coredns_init_service}
 
-  - path: /etc/systemd/system/coredns.service
+  - path: /opt/systemd/coredns.service
     owner: root:root
     permissions: 0644
     encoding: gzip
@@ -276,7 +290,7 @@ write_files:
     content: !!binary |
       ${nginx_conf}
 
-  - path: /etc/systemd/system/nginx.service
+  - path: /opt/systemd/nginx.service
     owner: root:root
     permissions: 0644
     encoding: gzip
@@ -297,7 +311,7 @@ write_files:
     content: !!binary |
       ${handle_worker_signals_env}
 
-  - path: /etc/systemd/system/handle-worker-signals.service
+  - path: /opt/systemd/handle-worker-signals.service
     owner: root:root
     permissions: 0644
     encoding: gzip
@@ -318,7 +332,7 @@ write_files:
     content: !!binary |
       ${kube_init_pre_sh}
 
-  - path: /etc/systemd/system/kube-init-pre.service
+  - path: /opt/systemd/kube-init-pre.service
     owner: root:root
     permissions: 0644
     encoding: gzip
@@ -339,7 +353,7 @@ write_files:
     content: !!binary |
       ${kube_init_post_sh}
 
-  - path: /etc/systemd/system/kube-init-post.service
+  - path: /opt/systemd/kube-init-post.service
     owner: root:root
     permissions: 0644
     encoding: gzip
@@ -360,7 +374,7 @@ write_files:
     content: !!binary |
       ${kube_apiserver_env}
 
-  - path: /etc/systemd/system/kube-apiserver.service
+  - path: /opt/systemd/kube-apiserver.service
     owner: root:root
     permissions: 0644
     encoding: gzip
@@ -374,7 +388,7 @@ write_files:
     content: !!binary |
       ${kube_controller_manager_env}
 
-  - path: /etc/systemd/system/kube-controller-manager.service
+  - path: /opt/systemd/kube-controller-manager.service
     owner: root:root
     permissions: 0644
     encoding: gzip
@@ -395,7 +409,7 @@ write_files:
     content: !!binary |
       ${kube_scheduler_config}
 
-  - path: /etc/systemd/system/kube-scheduler.service
+  - path: /opt/systemd/kube-scheduler.service
     owner: root:root
     permissions: 0644
     encoding: gzip
@@ -403,43 +417,7 @@ write_files:
       ${kube_scheduler_service}
 
 runcmd:
-  - [ mkdir, -p, /var/lib/etcd/data ]
-  - [ chown, etcd, /var/lib/etcd, /var/lib/etcd/data ]
-
-  - [ mkdir, -p, /var/lib/coredns ]
-  - [ chown, coredns, /var/lib/coredns ]
-
-  - [ mkdir, -p, /var/lib/nginx, /var/log/nginx ]
-  - [ chown, nginx, /var/lib/nginx, /var/log/nginx ]
-
-  - [ mkdir, -p, /var/lib/kubernetes,
-                 /var/lib/kube-apiserver,
-                 /var/lib/kube-scheduler,
-                 /var/lib/kube-controller-manager ]
-
-  - [ systemctl, daemon-reload ]
-
-  - [ systemctl, restart, iptables, ip6tables ]
-
-  - [ systemctl, enable, defaults.service,
-                         bins.service,
-                         etcd-init-pre.service,
-                         etcd.service,
-                         etcd-init-post.service,
-                         coredns-init.service,
-                         coredns.service,
-                         nginx.service,
-                         handle-worker-signals.service,
-                         kube-init-pre.service,
-                         kube-apiserver.service,
-                         kube-controller-manager.service,
-                         kube-scheduler.service,
-                         kube-init-post.service ]
-
-  - [ systemctl, start, handle-worker-signals.service,
-                        kube-init-post.service,
-                        kube-controller-manager.service,
-                        kube-scheduler.service ]
+  - [ /opt/bin/controller-first-boot.sh ]
 
 # Commented out unless needed.
 packages:

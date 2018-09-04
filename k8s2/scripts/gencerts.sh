@@ -10,6 +10,14 @@ if [ "${DEBUG}" = "true" ]; then set -x; fi
 BIN_DIR="${BIN_DIR:-/opt/bin}"
 echo "${PATH}" | grep -q "${BIN_DIR}" || export PATH="${BIN_DIR}:${PATH}"
 
+# If there is a single argument then its an environment file to load.
+if [ -n "${1}" ] && [ -e "${1}" ]; then
+  echo "loading cert environment file ${1}"
+  # shellcheck disable=SC1090
+  { set -o allexport && . "${1}" && set +o allexport; } || exit "${?}"
+  { cat "${1}" && echo; } || exit "${?}"
+fi
+
 eval_i() {
   k1="${1}"
   k2="${2:-$(echo "${k1}" | tr '[:lower:]' '[:upper:]')}"

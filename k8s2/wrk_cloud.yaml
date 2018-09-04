@@ -13,16 +13,16 @@ write_files:
 
   - path: /etc/NetworkManager/conf.d/00-do-not-manage-dns.conf
     owner: root:root
-    permissions: 0644
+    permissions: 0440
     encoding: gzip
     content: !!binary |
       ${network_manager_dns_disabled}
 
-  - path: /etc/default/path
+  - path: /etc/modules-load.d/br_netfilter.conf
     owner: root:root
-    permissions: 0444
+    permissions: 0440
     content: |
-      PATH=/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      br_netfilter
 
   - path: /etc/sysctl.d/k8s.conf
     owner: root:root
@@ -31,6 +31,12 @@ write_files:
       net.ipv4.ip_forward = 1
       net.bridge.bridge-nf-call-iptables = 1
       net.bridge.bridge-nf-call-ip6tables = 1
+
+  - path: /etc/default/path
+    owner: root:root
+    permissions: 0444
+    content: |
+      PATH=/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
   - path: /etc/sysconfig/iptables
     owner: root:root
@@ -257,7 +263,8 @@ write_files:
       ${kube_proxy_service}
 
 runcmd:
-  - [ mkdir, -p, /var/lib/containerd,
+  - [ mkdir, -p, /opt/containerd,
+                 /var/lib/containerd,
                  /var/run/containerd,
                  /var/run/containerd/runsc,
                  /var/lib/kubernetes,
@@ -266,11 +273,13 @@ runcmd:
 
   - [ sysctl, --system ]
 
-  - [ setenforce, 0 ]
+  #- [ setenforce, 0 ]
 
   - [ systemctl, daemon-reload ]
 
-  - [ systemctl, restart, iptables, ip6tables ]
+  - [ systemctl, restart, iptables, 
+                          ip6tables,
+                          systemd-modules-load.service ]
 
   - [ systemctl, enable, defaults.service,
                          bins.service,

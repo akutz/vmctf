@@ -15,9 +15,17 @@ echo "${PATH}" | grep -q "${BIN_DIR}" || export PATH="${BIN_DIR}:${PATH}"
 # the binaries are extracted.
 
 ################################################################################
+##                                  jq                                        ##
+################################################################################
+JQ_URL=https://github.com/stedolan/jq/releases/download
+JQ_ARTIFACT="${JQ_URL}/jq-${JQ_VERSION}/jq-linux64"
+printf '\nfetching %s\n' "${JQ_ARTIFACT}"
+curl --retry-max-time 120 -Lo "${BIN_DIR}/jq" "${JQ_ARTIFACT}"
+
+################################################################################
 ##                                 etcd                                       ##
 ################################################################################
-ETCD_URL=https://github.com/coreos/etcd/releases/download
+ETCD_URL=https://github.com/etcd-io/etcd/releases/download
 ETCD_ARTIFACT="${ETCD_URL}/v${ETCD_VERSION}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz"
 printf '\nfetching %s\n' "${ETCD_ARTIFACT}"
 curl --retry-max-time 120 -L \
@@ -68,6 +76,13 @@ curl --retry-max-time 120 -L \
 ################################################################################
 COREDNS_URL=https://github.com/coredns/coredns/releases/download
 COREDNS_ARTIFACT="${COREDNS_URL}/v${COREDNS_VERSION}/coredns_${COREDNS_VERSION}_linux_amd64.tgz"
+
+# Check to see if the CoreDNS artifact uses the old or new filename format.
+# The change occurred with release 1.2.2.
+if curl -I "${COREDNS_ARTIFACT}" | grep 'HTTP/1.1 404 Not Found'; then
+  COREDNS_ARTIFACT="${COREDNS_URL}/v${COREDNS_VERSION}/release.coredns_${COREDNS_VERSION}_linux_amd64.tgz"
+fi
+
 printf '\nfetching %s\n' "${COREDNS_ARTIFACT}"
 curl --retry-max-time 120 -L "${COREDNS_ARTIFACT}" | tar -xzvC "${BIN_DIR}"
 

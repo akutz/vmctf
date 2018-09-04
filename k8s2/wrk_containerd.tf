@@ -55,6 +55,8 @@ subreaper = true
   gid = 0
 
 [plugins]
+  [plugins.opt]
+    path = "/opt/containerd"
   [plugins.cri.containerd]
     snapshotter = "overlayfs"
     [plugins.cri.containerd.default_runtime]

@@ -12,7 +12,7 @@ variable "k8s_version" {
 
 // The name of the cluster
 variable "cluster_name" {
-  default = "kubernetes"
+  default = "k8s"
 }
 
 // The port on which K8s advertises the API server
@@ -138,16 +138,20 @@ variable "iptables_allow_all" {
 //                              Artifacts                                     //
 ////////////////////////////////////////////////////////////////////////////////
 
+variable "jq_version" {
+  default = "1.5"
+}
+
 // controller
 
-// https://github.com/coreos/etcd/releases
+// https://github.com/etcd-io/etcd/releases
 variable "etcd_version" {
   default = "3.3.9"
 }
 
 // https://github.com/coredns/coredns/releases
 variable "coredns_version" {
-  default = "1.2.0"
+  default = "1.2.2"
 }
 
 // Valid versions include:
@@ -171,7 +175,7 @@ variable "runc_version" {
 
 // https://storage.googleapis.com/gvisor/releases/nightly
 variable "runsc_version" {
-  default = "2018-08-17"
+  default = "2018-09-01"
 }
 
 // https://github.com/containernetworking/plugins/releases
@@ -181,7 +185,8 @@ variable "cni_plugins_version" {
 
 // https://github.com/containerd/containerd/releases
 variable "containerd_version" {
-  default = "1.1.0"
+  //default = "1.1.0"
+  default = "1.2.0-beta.2"
 }
 
 ////////////////////////////////////////////////////////////////////////////////

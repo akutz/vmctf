@@ -46,8 +46,8 @@ data "template_file" "ctl_etcd_env" {
   count = "${var.ctl_count}"
 
   template = <<EOF
-ETCD_DEBUG={DEBUG}
-ETCD_NAME={HOSTNAME}
+ETCD_DEBUG=$${debug}
+ETCD_NAME={HOST_NAME}
 ETCD_DATA_DIR=/var/lib/etcd/data
 ETCD_DISCOVERY=$${etcd_discovery}
 ETCD_LISTEN_PEER_URLS=https://{IPV4_ADDRESS}:2380
@@ -66,6 +66,7 @@ ETCD_PEER_TRUSTED_CA_FILE=/etc/ssl/ca.crt
 EOF
 
   vars {
+    debug          = "${var.debug}"
     etcd_discovery = "${data.http.etcd_discovery.body}"
   }
 }
@@ -75,8 +76,6 @@ locals {
 [Unit]
 Description=etcd.service
 Documentation=https://github.com/coreos/etcd
-After=bins.service etcd-init-pre.service
-Requires=bins.service etcd-init-pre.service
 
 [Install]
 WantedBy=multi-user.target
@@ -122,12 +121,10 @@ EOF
   ctl_etcd_init_pre_service = <<EOF
 [Unit]
 Description=etcd-init-pre.service
-After=defaults.service
-Requires=defaults.service
 ConditionPathExists=!/var/lib/etcd/.etcd-init.service.norun
 
-[Install]
-WantedBy=multi-user.target
+#[Install]
+#WantedBy=multi-user.target
 
 [Service]
 Type=oneshot
@@ -151,8 +148,8 @@ WantedBy=multi-user.target
 [Service]
 Type=oneshot
 RemainAfterExit=true
+EnvironmentFile=/etc/default/defaults
 EnvironmentFile=/etc/default/etcdctl
-EnvironmentFile=/etc/default/etcd-init-post
 ExecStart=/opt/bin/etcd-init-post.sh
 ExecStartPost=/bin/touch /var/lib/etcd/.etcd-init-post.service.norun
 EOF

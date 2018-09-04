@@ -1,0 +1,63 @@
+FROM akutz/golang:centos7.5.1804 as build
+LABEL "maintainer" "Andrew Kutz <akutz@vmware.com>"
+
+# Update the image.
+RUN yum update -y
+
+# Install the development toolchain.
+RUN yum group install -y "Development Tools"
+
+# Install the dependencies needed to build cri-o.
+RUN yum install -y  gpgme-devel \
+                    libassuan-devel \
+                    btrfs-progs-devel \
+                    device-mapper-devel \
+                    ostree-devel
+
+# Export the GOPATH
+ENV GOPATH=/root/go
+
+# Install the program used to build skopeo's documentation.
+RUN go get github.com/cpuguy83/go-md2man
+
+# The version of skopeo to build.
+ENV SKOPEO_VERSION=v0.1.31
+
+# Clone skopeo.
+RUN git clone https://github.com/containers/skopeo \
+    "${GOPATH}/src/github.com/containers/skopeo"
+
+# Jump into its source directory.
+WORKDIR "${GOPATH}/src/github.com/containers/skopeo"
+
+# Checkout the version to build.
+RUN git checkout -b "${SKOPEO_VERSION}" "${SKOPEO_VERSION}"
+
+# There is not yet a tagged release that fixes a build issue due to
+# skopeo moving to a different github org. Cherry-pick the fix for
+# this on top of the release tag.
+RUN git config --local user.email "akutz@vmware.com"
+RUN git config --local user.name "akutz"
+RUN git cherry-pick 2684e51aa5590bf2f9741710246574d711d77873
+
+# Build skopeo.
+RUN make binary-local
+RUN make install
+
+# Create a tarball from the assets.
+RUN tar czvf /root/skopeo.tar.gz \
+    /usr/bin/skopeo \
+    /usr/share/man/man1/skopeo.1 \
+    /usr/share/bash-completion/completions/skopeo \
+    /etc/containers/policy.json \
+    /etc/containers/registries.d/default.yaml
+
+# Copy the bits into the second stage of the build.
+FROM alpine:latest
+WORKDIR /
+COPY --from=build /root/skopeo.tar.gz .
+
+# Set the entrypoint to the bash shell that, by default, pipes
+# the above tarball to stdout.
+CMD [ "-c", "base64 </skopeo.tar.gz" ]
+ENTRYPOINT [ "/bin/sh" ]

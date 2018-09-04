@@ -59,3 +59,24 @@ EOF
   }
 }
 
+data "template_file" "defaults_env" {
+  template = <<EOF
+DEBUG=$${debug}
+BIN_DIR=/opt/bin
+HOSTFQDN="{HOSTFQDN}"
+HOSTNAME="{HOSTNAME}"
+HOST_FQDN="{HOSTFQDN}"
+HOST_NAME="{HOSTNAME}"
+IPV4_ADDRESS={IPV4_ADDRESS}
+CLUSTER_FQDN="$${cluster_fqdn}"
+EXPECTED_CONTROLLER_COUNT=$${expected_controller_count}
+EXPECTED_WORKER_COUNT=$${expected_worker_count}
+EOF
+
+  vars {
+    debug                     = "${var.debug}"
+    cluster_fqdn              = "${local.cluster_fqdn}"
+    expected_controller_count = "${var.ctl_count}"
+    expected_worker_count     = "${var.wrk_count}"
+  }
+}

@@ -1,0 +1,24 @@
+FROM centos:7.5.1804
+LABEL "maintainer" "Andrew Kutz <akutz@vmware.com>"
+
+# The version of Go to install. Available versions are listed at 
+# https://golang.org/dl/.
+ENV GO_VERSION=1.11
+
+# Download the Go binary package and extract it to /go.
+RUN curl -L https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz | tar xzC /
+
+# Create a directory for GOPATH.
+RUN mkdir -p /root/go
+ENV GOPATH=/root/go
+
+# Update the PATH environment variable to include the bin directories
+# from both GOPATH and the Go installation.
+ENV PATH=/root/go/bin:/go/bin:${PATH}
+
+# Set the working directory to the root of the GOPATH's src directory.
+WORKDIR /root/go/src
+
+# Set the entrypoint to the Go binary.
+CMD [ "version" ]
+ENTRYPOINT [ "/go/bin/go" ]

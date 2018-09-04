@@ -15,6 +15,14 @@ echo "${PATH}" | grep -q "${BIN_DIR}" || export PATH="${BIN_DIR}:${PATH}"
 # the binaries are extracted.
 
 ################################################################################
+##                                  jq                                        ##
+################################################################################
+JQ_URL=https://github.com/stedolan/jq/releases/download
+JQ_ARTIFACT="${JQ_URL}/jq-${JQ_VERSION}/jq-linux64"
+printf '\nfetching %s\n' "${JQ_ARTIFACT}"
+curl --retry-max-time 120 -Lo "${BIN_DIR}/jq" "${JQ_ARTIFACT}"
+
+################################################################################
 ##                                  K8s                                       ##
 ################################################################################
 

@@ -7,7 +7,7 @@ data "template_file" "ctl_kube_init_pre_env" {
 TLS_0=kube-apiserver
 TLS_COMMON_NAME_0=$${cluster_admin}
 TLS_SAN_IP_0=127.0.0.1 $${cluster_svc_ip} {ETCD_MEMBER_IP_ADDRESSES}
-TLS_SAN_DNS_0=localhost $${cluster_fqdn} $${cluster_svc_fqdn} $${cluster_name}.default
+TLS_SAN_DNS_0=localhost $${cluster_fqdn} $${cluster_svc_fqdn} $${cluster_svc_name}.default
 
 TLS_1=k8s-admin
 TLS_COMMON_NAME_1=admin
@@ -54,10 +54,10 @@ KFG_KEY_2=/etc/ssl/kube-controller-manager.key
 EOF
 
   vars {
-    cluster_name     = "${var.cluster_name}"
     cluster_admin    = "${var.cluster_admin}"
     cluster_fqdn     = "${local.cluster_fqdn}"
     cluster_svc_fqdn = "${local.cluster_svc_fqdn}"
+    cluster_svc_name = "${local.cluster_svc_name}"
     cluster_svc_ip   = "${local.cluster_svc_ip}"
   }
 }
@@ -164,7 +164,7 @@ CONTROLLER_OPTS="--address=0.0.0.0 \
 --cloud-provider=vsphere \
 --cloud-config=/var/lib/kubernetes/cloud-provider.config \
 --cluster-cidr='$${cluster_cidr}' \
---cluster-name='$${cluster_name}' \
+--cluster-name='$${cluster_svc_name}' \
 --cluster-signing-cert-file=/etc/ssl/ca.crt \
 --cluster-signing-key-file=/etc/ssl/ca.key \
 --kubeconfig=/var/lib/kube-controller-manager/kubeconfig \
@@ -179,7 +179,7 @@ EOF
 
   vars {
     cluster_cidr             = "${var.cluster_cidr}"
-    cluster_name             = "${var.cluster_name}"
+    cluster_svc_name         = "${local.cluster_svc_name}"
     service_cluster_ip_range = "${var.service_cluster_ip_range}"
   }
 }

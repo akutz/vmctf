@@ -18,8 +18,8 @@ is_num() {
 }
 
 # This is set to the number of expected etcd members.
-if ! is_num "${ETCD_MEMBER_COUNT}"; then
-  echo "error: invalid ETCD_MEMBER_COUNT=${ETCD_MEMBER_COUNT}"
+if ! is_num "${EXPECTED_CONTROLLER_COUNT}"; then
+  echo "error: invalid EXPECTED_CONTROLLER_COUNT=${EXPECTED_CONTROLLER_COUNT}"
   exit 1
 fi
 
@@ -32,10 +32,10 @@ while true; do
   fi
   num_mem=$(echo "${etcd_members}" | wc -l | awk '{print $1}')
   if ! is_num "${num_mem}"; then
-    echo "error: invalid ACTUAL_ETCD_MEMBER_COUNT=${num_mem}"
+    echo "error: invalid ACTUAL_EXPECTED_CONTROLLER_COUNT=${num_mem}"
     exit 1
   fi
-  [ "${num_mem}" -ge "${ETCD_MEMBER_COUNT}" ] && break
+  [ "${num_mem}" -ge "${EXPECTED_CONTROLLER_COUNT}" ] && break
   sleep 1
 done
 

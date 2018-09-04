@@ -3,22 +3,22 @@ data "template_file" "gencerts_env" {
 TLS_CA_CRT=/etc/ssl/ca.crt
 TLS_CA_KEY=/etc/ssl/ca.key
 
-TLS_DEFAULT_BITS=$${tls_bits}
-TLS_DEFAULT_DAYS=$${tls_days}
+TLS_DEFAULT_BITS="$${tls_bits}"
+TLS_DEFAULT_DAYS="$${tls_days}"
 
-TLS_COUNTRY_NAME=$${tls_country}
-TLS_STATE_OR_PROVINCE_NAME=$${tls_province}
-TLS_LOCALITY_NAME=$${tls_locality}
-TLS_ORG_NAME=$${tls_org}
-TLS_OU_NAME=$${tls_ou}
-TLS_EMAIL=$${tls_email}
+TLS_COUNTRY_NAME="$${tls_country}"
+TLS_STATE_OR_PROVINCE_NAME="$${tls_province}"
+TLS_LOCALITY_NAME="$${tls_locality}"
+TLS_ORG_NAME="$${tls_org}"
+TLS_OU_NAME="$${tls_ou}"
+TLS_EMAIL="$${tls_email}"
 
-TLS_KEY_USAGE=keyEncipherment, digitalSignature
-TLS_EXT_KEY_USAGE=serverAuth, clientAuth
+TLS_KEY_USAGE="keyEncipherment, digitalSignature"
+TLS_EXT_KEY_USAGE="serverAuth, clientAuth"
 
 TLS_SAN=true
-TLS_SAN_DNS=localhost {HOSTNAME} {HOSTFQDN}
-TLS_SAN_IP=127.0.0.1 {IPV4_ADDRESS}
+TLS_SAN_DNS="localhost {HOST_NAME} {HOST_FQDN}"
+TLS_SAN_IP="127.0.0.1 {IPV4_ADDRESS}"
 
 TLS_KEY_UID=root
 TLS_KEY_GID=root

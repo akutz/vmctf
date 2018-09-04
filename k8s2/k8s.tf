@@ -8,8 +8,9 @@ locals {
 
   cluster_svc_domain = "cluster.local"
 
-  cluster_svc_fqdn       = "${var.cluster_name}.default.svc.${local.cluster_svc_domain}"
-  cluster_sans_dns_names = "${concat(list(local.cluster_svc_fqdn), var.cluster_sans_dns_names)}"
+  cluster_svc_name = "kubernetes"
+
+  cluster_svc_fqdn = "${local.cluster_svc_name}.default.svc.${local.cluster_svc_domain}"
 }
 
 // ctl_pod_cidr is reserved for future use in case workloads are scheduled
@@ -73,7 +74,7 @@ EOF
 
 data "template_file" "ctl_bins_env" {
   template = <<EOF
-DEBUG={DEBUG}
+JQ_VERSION=$${jq_version}
 ETCD_VERSION=$${etcd_version}
 K8S_VERSION=$${k8s_version}
 COREDNS_VERSION=$${coredns_version}
@@ -81,6 +82,7 @@ NGINX_VERSION=$${nginx_version}
 EOF
 
   vars {
+    jq_version      = "${var.jq_version}"
     etcd_version    = "${var.etcd_version}"
     k8s_version     = "${var.k8s_version}"
     coredns_version = "${var.coredns_version}"
@@ -91,6 +93,7 @@ EOF
 data "template_file" "wrk_bins_env" {
   template = <<EOF
 DEBUG={DEBUG}
+JQ_VERSION=$${jq_version}
 K8S_VERSION=$${k8s_version}
 CRICTL_VERSION=$${crictl_version}
 RUNC_VERSION=$${runc_version}
@@ -100,6 +103,7 @@ CONTAINERD_VERSION=$${containerd_version}
 EOF
 
   vars {
+    jq_version          = "${var.jq_version}"
     k8s_version         = "${var.k8s_version}"
     crictl_version      = "${var.crictl_version}"
     runc_version        = "${var.runc_version}"
@@ -316,8 +320,8 @@ spec:
         args:
         - --v=2
         - --logtostderr
-        - --probe=kubedns,127.0.0.1:10053,$${cluster_name}.default.svc.$${cluster_svc_domain},5,SRV
-        - --probe=dnsmasq,127.0.0.1:53,$${cluster_name}.default.svc.$${cluster_svc_domain},5,SRV
+        - --probe=kubedns,127.0.0.1:10053,$${cluster_svc_name}.default.svc.$${cluster_svc_domain},5,SRV
+        - --probe=dnsmasq,127.0.0.1:53,$${cluster_svc_name}.default.svc.$${cluster_svc_domain},5,SRV
         ports:
         - containerPort: 10054
           name: metrics
@@ -332,7 +336,7 @@ EOF
 
   vars {
     cluster_svc_dns_ip = "${local.cluster_svc_dns_ip}"
-    cluster_name       = "${var.cluster_name}"
+    cluster_svc_name   = "${local.cluster_svc_name}"
     cluster_svc_domain = "${local.cluster_svc_domain}"
   }
 }

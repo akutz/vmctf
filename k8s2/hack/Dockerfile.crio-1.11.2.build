@@ -1,0 +1,69 @@
+FROM akutz/golang:centos7.5.1804 as build
+LABEL "maintainer" "Andrew Kutz <akutz@vmware.com>"
+
+# Update the image.
+RUN yum update -y
+
+# Install the development toolchain.
+RUN yum group install -y "Development Tools"
+
+# Install the dependencies needed to build cri-o.
+RUN yum install -y  btrfs-progs-devel \
+                    device-mapper-devel \
+                    git \
+                    glib2-devel \
+                    glibc-devel \
+                    glibc-static \
+                    gpgme-devel \
+                    libassuan-devel \
+                    libgpg-error-devel \
+                    libseccomp-devel \
+                    libselinux-devel \
+                    ostree-devel \
+                    pkgconfig \
+                    runc \
+                    skopeo-containers
+
+# Export the GOPATH
+ENV GOPATH=/root/go
+
+# The version of crio-o to build.
+ENV CRIO_VERSION=v1.11.2
+
+# Clone cri-o.
+RUN git clone https://github.com/kubernetes-incubator/cri-o \
+    "${GOPATH}/kubernetes-incubator/cri-o"
+
+# Jump into its source directory.
+WORKDIR "${GOPATH}/kubernetes-incubator/cri-o"
+
+# Checkout the version to build.
+RUN git checkout -b "${CRIO_VERSION}" "${CRIO_VERSION}"
+
+# Build cri-o.
+RUN make install.tools
+RUN make BUILDTAGS=""
+RUN make install
+RUN make install.config
+
+# Create a tarball from the assets.
+RUN tar czvf /root/crio.tar.gz \
+    /usr/local/bin/crio \
+    /usr/local/libexec/crio/conmon \
+    /usr/local/libexec/crio/pause \
+    /usr/local/share/man/man5/crio.conf.5 \
+    /usr/local/share/man/man8/crio.8 \
+    /etc/crio/crio.conf \
+    /etc/crio/seccomp.json \
+    /usr/local/share/oci-umount/oci-umount.d/crio-umount.conf \
+    /etc/crictl.yaml
+
+# Copy the bits into the second stage of the build.
+FROM alpine:latest
+WORKDIR /
+COPY --from=build /root/crio.tar.gz .
+
+# Set the entrypoint to the bash shell that, by default, pipes
+# the above tarball to stdout.
+CMD [ "-c", "base64 </crio.tar.gz" ]
+ENTRYPOINT [ "/bin/sh" ]

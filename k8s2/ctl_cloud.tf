@@ -51,6 +51,12 @@ data "template_file" "ctl_cloud_config" {
     users = "${join("\n", data.template_file.cloud_users.*.rendered)}"
 
     //
+    controller_first_boot_sh = "${base64gzip(file("${path.module}/scripts/controller-first-boot.sh"))}"
+
+    //
+    defaults_env = "${base64gzip(data.template_file.defaults_env.rendered)}"
+
+    //
     iptables = "${base64gzip(local.ctl_iptables)}"
 
     //
