@@ -118,23 +118,6 @@ export ETCDCTL_API \
        ETCDCTL_ENDPOINTS
 EOF
 
-  ctl_etcd_init_pre_service = <<EOF
-[Unit]
-Description=etcd-init-pre.service
-ConditionPathExists=!/var/lib/etcd/.etcd-init.service.norun
-
-#[Install]
-#WantedBy=multi-user.target
-
-[Service]
-Type=oneshot
-RemainAfterExit=true
-EnvironmentFile=/etc/default/gencerts
-EnvironmentFile=/etc/default/etcd-init-pre
-ExecStart=/opt/bin/gencerts.sh
-ExecStartPost=/bin/touch /var/lib/etcd/.etcd-init.service.norun
-EOF
-
   ctl_etcd_init_post_service = <<EOF
 [Unit]
 Description=etcd-init-post.service
@@ -153,4 +136,28 @@ EnvironmentFile=/etc/default/etcdctl
 ExecStart=/opt/bin/etcd-init-post.sh
 ExecStartPost=/bin/touch /var/lib/etcd/.etcd-init-post.service.norun
 EOF
+}
+
+data "template_file" "ctl_etcd_gencerts_env" {
+  template = <<EOF
+TLS_0=etcdctl
+TLS_COMMON_NAME_0="etcdctl@{HOST_FQDN}"
+TLS_SAN_0=false
+TLS_KEY_PERM_0=0444
+
+TLS_1=etcd-client
+TLS_COMMON_NAME_1="{HOST_FQDN}"
+TLS_SAN_DNS_1="localhost {HOST_NAME} {HOST_FQDN} $${cluster_fqdn}"
+TLS_KEY_UID_1=etcd
+TLS_CRT_UID_1=etcd
+
+TLS_2=etcd-peer
+TLS_COMMON_NAME_2="{HOST_FQDN}"
+TLS_KEY_UID_2=etcd
+TLS_CRT_UID_2=etcd
+EOF
+
+  vars {
+    cluster_fqdn = "${local.cluster_fqdn}"
+  }
 }

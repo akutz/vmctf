@@ -39,28 +39,7 @@ load_defaults() {
 
 generate_etcd_certs() {
   echo "generating etcd certs"
-  
-  temp_file=$(mktemp) || exit "${?}"
-
-  cat <<EOF > "${temp_file}"
-TLS_0=etcdctl
-TLS_COMMON_NAME_0="etcdctl@${HOST_FQDN}"
-TLS_SAN_0=false
-TLS_KEY_PERM_0=0444
-
-TLS_1=etcd-client
-TLS_COMMON_NAME_1="${HOST_FQDN}"
-TLS_SAN_DNS_1="localhost ${HOST_NAME} ${HOST_FQDN} ${CLUSTER_FQDN}"
-TLS_KEY_UID_1=etcd
-TLS_CRT_UID_1=etcd
-
-TLS_2=etcd-peer
-TLS_COMMON_NAME_2="${HOST_FQDN}"
-TLS_KEY_UID_2=etcd
-TLS_CRT_UID_2=etcd
-EOF
-
-  /opt/bin/gencerts.sh "${temp_file}"
+  /opt/bin/gencerts.sh /etc/default/etcd-gencerts
 }
 
 generate_certs() {

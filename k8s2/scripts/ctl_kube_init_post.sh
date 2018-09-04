@@ -115,8 +115,8 @@ subjects:
     name: ${CLUSTER_ADMIN}
 EOF
 
-# Deploy kube-dns
-kubectl create -f /var/lib/kubernetes/kube-dns-podspec.yaml
+# Deploy coredns
+kubectl create -f /var/lib/kubernetes/coredns-podspec.yaml
 
 # Indicate the script has completed
 release_lock

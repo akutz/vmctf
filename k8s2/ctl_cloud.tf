@@ -95,8 +95,7 @@ data "template_file" "ctl_cloud_config" {
     tls_ca_key = "${base64gzip(local.tls_ca_key)}"
 
     //
-    etcd_init_pre_env      = "${base64gzip(data.template_file.ctl_etcd_init_pre_env.rendered)}"
-    etcd_init_pre_service  = "${base64gzip(local.ctl_etcd_init_pre_service)}"
+    etcd_gencerts_env      = "${base64gzip(data.template_file.ctl_etcd_gencerts_env.rendered)}"
     etcd_init_post_env     = "${base64gzip(data.template_file.ctl_etcd_init_post_env.rendered)}"
     etcd_init_post_sh      = "${base64gzip(file("${path.module}/scripts/ctl_etcd_init_post.sh"))}"
     etcd_init_post_service = "${base64gzip(local.ctl_etcd_init_post_service)}"
@@ -113,7 +112,7 @@ data "template_file" "ctl_cloud_config" {
     coredns_corefile     = "${base64gzip(data.template_file.ctl_coredns_corefile.rendered)}"
 
     //
-    kube_dns_podspec = "${base64gzip(data.template_file.kube_dns_podspec.rendered)}"
+    coredns_podspec = "${base64gzip(data.template_file.coredns_podspec.rendered)}"
 
     //
     nginx_conf    = "${base64gzip(data.template_file.ctl_nginx_conf.rendered)}"

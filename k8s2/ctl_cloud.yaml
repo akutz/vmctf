@@ -66,12 +66,12 @@ write_files:
     content: !!binary |
       ${iptables}
 
-  - path: /var/lib/kubernetes/kube-dns-podspec.yaml
+  - path: /var/lib/kubernetes/coredns-podspec.yaml
     owner: root:root
-    permissions: 0640
+    permissions: 0644
     encoding: gzip
     content: !!binary |
-      ${kube_dns_podspec}
+      ${coredns_podspec}
 
   - path: /var/lib/kubernetes/cloud-provider.config
     owner: root:root
@@ -100,20 +100,6 @@ write_files:
     encoding: gzip
     content: !!binary |
       ${tls_ca_key}
-
-#  - path: /opt/bin/defaults.sh
-#    owner: root:root
-#    permissions: 0755
-#    encoding: gzip
-#    content: !!binary |
-#      ${defaults_sh}
-
-#  - path: /opt/systemd/defaults.service
-#    owner: root:root
-#    permissions: 0644
-#    encoding: gzip
-#    content: !!binary |
-#      ${defaults_service}
 
   - path: /opt/bin/newcert.sh
     owner: root:root
@@ -157,33 +143,12 @@ write_files:
     content: !!binary |
       ${bins_env}
 
-#  - path: /opt/bin/bins.sh
-#    owner: root:root
-#    permissions: 0755
-#    encoding: gzip
-#    content: !!binary |
-#      ${bins_sh}
-
-#  - path: /opt/systemd/bins.service
-#    owner: root:root
-#    permissions: 0644
-#    encoding: gzip
-#    content: !!binary |
-#      ${bins_service}
-
-#  - path: /etc/default/etcd-init-pre
-#    owner: root:root
-#    permissions: 0644
-#    encoding: gzip
-#    content: !!binary |
-#      ${etcd_init_pre_env}
-
-#  - path: /opt/systemd/etcd-init-pre.service
-#    owner: root:root
-#    permissions: 0644
-#    encoding: gzip
-#    content: !!binary |
-#      ${etcd_init_pre_service}
+  - path: /etc/default/etcd-gencerts
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${etcd_gencerts_env}
 
   - path: /etc/default/etcd
     owner: root:root
@@ -206,12 +171,12 @@ write_files:
     content: !!binary |
       ${etcd_init_post_sh}
 
-#  - path: /etc/default/etcd-init-post
-#    owner: root:root
-#    permissions: 0644
-#    encoding: gzip
-#    content: !!binary |
-#      ${etcd_init_post_env}
+  - path: /etc/default/etcd-init-post
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${etcd_init_post_env}
 
   - path: /opt/systemd/etcd-init-post.service
     owner: root:root
