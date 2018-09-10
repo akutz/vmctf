@@ -7,14 +7,14 @@
 # Turns up a Kubernetes cluster. Supports single-node, single-master,
 # and multi-master deployments.
 #
-# usage: kubeeve.sh
-#        kubeeve.sh NODE_TYPE ETCD_DISCOVERY NUM_CONTROLLERS NUM_NODES
+# usage: yakity.sh
+#        yakity.sh NODE_TYPE ETCD_DISCOVERY NUM_CONTROLLERS NUM_NODES
 #
 #   SINGLE NODE CLUSTER
-#     To deploy a single node cluster execute "kubeeve.sh" with no arguments.
+#     To deploy a single node cluster execute "yakity.sh" with no arguments.
 #
 #   MULTI NODE CLUSTER
-#     To deploy a multi-node cluster execute "kubeeve.sh" with the following
+#     To deploy a multi-node cluster execute "yakity.sh" with the following
 #     arguments on each controller and worker node in the cluster.
 #
 #       NODE_TYPE        May be set to "controller", "worker", or "both".
@@ -90,8 +90,8 @@ warn_and_mkdir_sysdir /etc/sysconfig
 warn_and_mkdir_sysdir /etc/modules-load.d
 warn_and_mkdir_sysdir /etc/sysctl.d
 
-# If the kubeeve defaults file is present then load it.
-KUP_DEFAULTS=${KUP_DEFAULTS:-/etc/default/kubeeve}
+# If the yakity defaults file is present then load it.
+KUP_DEFAULTS=${KUP_DEFAULTS:-/etc/default/yakity}
 if [ -e "${KUP_DEFAULTS}" ]; then
   echo "loading defaults = ${KUP_DEFAULTS}"
   # shellcheck disable=SC1090
@@ -1400,7 +1400,7 @@ put_node_info() {
   # Get the number of nodes that have already stored their information.
   # This becomes the node's index, which is important as it forms
   # the node's pod-cidr.
-  NODE_INDEX=$(etcdctl get '/kubeeve/nodes/' --prefix --keys-only | grep -cv '^$')
+  NODE_INDEX=$(etcdctl get '/yakity/nodes/' --prefix --keys-only | grep -cv '^$')
 
   # Build this node's pod cidr.
   # shellcheck disable=SC2059
@@ -1408,7 +1408,7 @@ put_node_info() {
     POD_CIDR=$(printf "${POD_CIDR_FORMAT}" "${NODE_INDEX}")
   fi
   
-  node_info_key="/kubeeve/nodes/${NODE_INDEX}"
+  node_info_key="/yakity/nodes/${NODE_INDEX}"
   echo "node info key=${node_info_key}"
   
   cat <<EOF | etcdctl put "${node_info_key}" || \
@@ -1427,7 +1427,7 @@ EOF
 }
 
 get_all_node_info() {
-  etcdctl get /kubeeve/nodes --sort-by=KEY --prefix
+  etcdctl get /yakity/nodes --sort-by=KEY --prefix
 }
 
 get_all_node_ipv4_addresses() {
@@ -1444,7 +1444,7 @@ wait_on_all_node_info() {
     
     # Break out of the loop if the number of nodes that have stored
     # their info matches the number of expected nodes.
-    num_nodes=$(etcdctl get '/kubeeve/nodes/' --prefix --keys-only | grep -cv '^$')
+    num_nodes=$(etcdctl get '/yakity/nodes/' --prefix --keys-only | grep -cv '^$')
     [ "${num_nodes}" -eq "${NUM_NODES}" ] && break
 
     sleep 3
@@ -1455,7 +1455,7 @@ wait_on_all_node_info() {
 # Prints the information each node uploaded about itself to the etcd server.
 print_all_node_info() {
   i=0 && while true; do
-    node_info_key="/kubeeve/nodes/${i}"
+    node_info_key="/yakity/nodes/${i}"
     node_info=$(etcdctl get "${node_info_key}" --print-value-only) || break
     [ -z "${node_info}" ] && break
     echo "${node_info_key}"
@@ -1874,7 +1874,7 @@ fetch_kubeconfig() {
 # controller/worker nodes.
 generate_or_fetch_shared_kubernetes_assets() {
   # The key prefix for shared assets.
-  shared_assets_prefix="/kubeeve/shared"
+  shared_assets_prefix="/yakity/shared"
 
   # Stores the name of the node that generates the shared assets.
   init_node_key="${shared_assets_prefix}/init-node"
@@ -2145,7 +2145,7 @@ configure_k8s_rbac() {
   echo "configuring kubernetes RBAC"
 
   # Stores the name of the node that configures rbac.
-  init_rbac_key="/kubeeve/init-rbac"
+  init_rbac_key="/yakity/init-rbac"
 
   # Check to see if the init routine has already run on another node.
   name_of_init_node=$(etcdctl get --print-value-only "${init_rbac_key}") || \
@@ -2221,7 +2221,7 @@ configure_k8s_dns() {
   echo "configuring kubernetes service DNS"
 
   # Stores the name of the node that configures service DNS.
-  init_svc_dns_key="/kubeeve/init-service-dns"
+  init_svc_dns_key="/yakity/init-service-dns"
 
   # Check to see if the init routine has already run on another node.
   name_of_init_node=$(etcdctl get --print-value-only "${init_svc_dns_key}") || \
@@ -2566,7 +2566,7 @@ create_pod_net_routes() {
 
   # Create and execute one or several commands to add routes to
   # pod networks on other nodes.
-  for r in $(etcdctl get /kubeeve/nodes \
+  for r in $(etcdctl get /yakity/nodes \
             --print-value-only --prefix | \
             jq -rs "${jqq}"); do
     echo "${r}"
@@ -2828,7 +2828,7 @@ do_with_lock put_node_info || fatal "failed to put node info"
 
 # Waits until all nodes have stored their information in etcd.
 # After this step all node information should be available at
-# the key prefix '/kubeeve/nodes'.
+# the key prefix '/yakity/nodes'.
 wait_on_all_node_info || fatal "failed to wait on all node info"
 
 # Prints the information for each of the discovered nodes.

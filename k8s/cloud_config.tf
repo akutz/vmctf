@@ -127,9 +127,9 @@ data "template_file" "ctl_cloud_config" {
     debug = "${var.debug}"
 
     //
-    kubeeve_sh    = "${base64gzip(file("${path.module}/kubeeve.sh"))}"
-    kubeeve_env   = "${base64gzip(data.template_file.kubeeve_env.*.rendered[count.index])}"
-    node_type = "controller"
+    yakity_sh  = "${base64gzip(file("${path.module}/yakity.sh"))}"
+    yakity_env = "${base64gzip(data.template_file.yakity_env.*.rendered[count.index])}"
+    node_type  = "controller"
 
     //
     users = "${join("\n", data.template_file.cloud_users.*.rendered)}"
@@ -187,9 +187,9 @@ data "template_file" "wrk_cloud_config" {
     debug = "${var.debug}"
 
     //
-    kubeeve_sh    = "${base64gzip(file("${path.module}/kubeeve.sh"))}"
-    kubeeve_env   = "${base64gzip(data.template_file.kubeeve_env.*.rendered[count.index])}"
-    node_type = "worker"
+    yakity_sh  = "${base64gzip(file("${path.module}/yakity.sh"))}"
+    yakity_env = "${base64gzip(data.template_file.yakity_env.*.rendered[count.index])}"
+    node_type  = "worker"
 
     //
     users = "${join("\n", data.template_file.cloud_users.*.rendered)}"

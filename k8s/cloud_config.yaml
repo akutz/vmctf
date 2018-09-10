@@ -10,22 +10,22 @@ users:
 ${users}
 
 write_files:
-  - path: /etc/default/kubeeve
+  - path: /etc/default/yakity
     owner: root:root
     permissions: 0644
     encoding: gzip
     content: !!binary |
-      ${kubeeve_env}
+      ${yakity_env}
 
-  - path: /opt/bin/kubeeve.sh
+  - path: /opt/bin/yakity.sh
     owner: root:root
     permissions: 0755
     encoding: gzip
     content: !!binary |
-      ${kubeeve_sh}
+      ${yakity_sh}
 
 runcmd:
-  - [ /opt/bin/kubeeve.sh, ${node_type} ]
+  - [ /opt/bin/yakity.sh, ${node_type} ]
 
 packages:
   - lsof
