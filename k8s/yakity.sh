@@ -40,7 +40,7 @@ is_debug() { [ "${DEBUG}" = "true" ]; }
 is_debug && set -x && echo "tracing enabled"
 
 # Add ${BIN_DIR} to the path
-BIN_DIR="${BIN_DIR:-/opt/bin}"
+BIN_DIR="${BIN_DIR:-/opt/bin}"; mkdir -p "${BIN_DIR}"
 echo "${PATH}" | grep -qF "${BIN_DIR}" || export PATH="${BIN_DIR}:${PATH}"
 
 # debug MSG
@@ -101,7 +101,7 @@ fi
 # NODE_TYPE is first assgined to the value of the first argument, $1. 
 # If unset, NODE_TYPE is assigned the value of the environment variable
 # NODE_TYPE. If unset, NODE_TYPE defaults to "both".
-NODE_TYPE="${1:-${NODE_TYPE:-both}}"
+NODE_TYPE="${1:-${NODE_TYPE}}"; NODE_TYPE="${NODE_TYPE:-both}"
 
 # ETCD_DISCOVERY is first assgined to the value of the second argument, $2. 
 # If unset, ETCD_DISCOVERY is assigned the value of the environment variable
@@ -118,8 +118,7 @@ NUM_CONTROLLERS="${NUM_CONTROLLERS:-1}"
 # If unset, NUM_NODES is assigned the value of the environment variable
 # NUM_NODES. If unset, NUM_NODES defaults to the value of the environment
 # variable NUM_CONTROLLERS.
-NUM_NODES="${4:-${NUM_NODES}}"
-NUM_NODES="${NUM_NODES:-${NUM_CONTROLLERS}}"
+NUM_NODES="${4:-${NUM_NODES}}"; NUM_NODES="${NUM_NODES:-${NUM_CONTROLLERS}}"
 
 echo "pre-processed input"
 echo "  NODE_TYPE       = ${NODE_TYPE}"
@@ -178,7 +177,7 @@ IPV4_DEFAULT_GATEWAY="$(ip route get 1 | awk '{print $3;exit}')" || \
   fatal "failed to get ipv4 default gateway"
 
 # Network information about the host.
-NETWORK_DOMAIN="${NETWORK_DOMAIN:-cluster.local}"
+NETWORK_DOMAIN="${NETWORK_DOMAIN:-$(hostname -d)}"
 NETWORK_IPV4_SUBNET_CIDR="${NETWORK_IPV4_SUBNET_CIDR:-${IPV4_DEFAULT_GATEWAY}/24}"
 NETWORK_DNS_1="${NETWORK_DNS_1:-8.8.8.8}"
 NETWORK_DNS_2="${NETWORK_DNS_2:-8.8.4.4}"
@@ -213,8 +212,23 @@ CURL="curl --retry 5 --retry-delay 1 --retry-max-time 120"
 CURL_DEBUG=$(parse_bool "${CURL_DEBUG}")
 [ "${CURL_DEBUG}" = "true" ] && CURL="${CURL} -v"
 
-# Set to true to download and run the kubernetes e2e conformance test suite.
-RUN_CONFORMANCE_TESTS="${RUN_CONFORMANCE_TESTS:-false}"
+# Set to true to install the service that runs the kubernetes e2e conformance
+# tests. Please note that RUN_CONFORMANCE_TESTS must be set to "true" to
+# run the tests.
+#
+# The conformance test suite is installed to the first node that is not
+# explcitly a control-plane node. This is due to the fact that worker
+# nodes generally have more compute resources.
+#
+# Additionally, installing the conformance tests to a worker node *does*
+# introduce a security risk as an admin kubeconfig file is written to
+# /var/lib/kubernetes/e2e/kubeconfig. This file is required by the
+# conformance tests. Setting INSTALL_CONFORMANCE_TESTS=false prevents
+# this file from being written to a worker node.
+INSTALL_CONFORMANCE_TESTS="${INSTALL_CONFORMANCE_TESTS:-true}"
+
+# Set to true to run the kubernetes e2e conformance test suite.
+RUN_CONFORMANCE_TESTS="${RUN_CONFORMANCE_TESTS:-true}"
 
 # Can be generated with:
 #  head -c 32 /dev/urandom | base64
@@ -235,7 +249,7 @@ CLUSTER_CIDR="${CLUSTER_CIDR:-10.200.0.0/16}"
 
 # The format of K8s pod CIDR. The format should include a %d to be
 # replaced by the index of this host in the cluster as discovered 
-# via etcd. The result is assigned to POD_CIDR. If this is a single-node 
+# via etcd. The result is assigned to POD_CIDR. If this is a single-node
 # cluster then POD_CIDR will be set to 10.200.0.0/24 (per the default
 # pattern below).
 POD_CIDR_FORMAT="${POD_CIDR_FORMAT:-10.200.%d.0/24}"
@@ -273,7 +287,18 @@ SERVICE_FQDN="${SERVICE_NAME}.default.svc.${SERVICE_DOMAIN}"
 # below are installed on both controllers and workers. Some is intalled
 # on one, and some the other. Some software, such as jq, is installed
 # on both controllers and workers.
+
+# K8S_VERSION may be set to:
+#
+#    * release/(latest|stable|<version>)
+#    * ci/(latest|<version>)
+#
+# To see a full list of supported versions use the Google Storage
+# utility, gsutil, and execute "gsutil ls gs://kubernetes-release/release"
+# for GA releases or "gsutil ls gs://kubernetes-release-dev" for dev
+# releases.
 K8S_VERSION="${K8S_VERSION:-release/stable}"
+
 CNI_PLUGINS_VERSION="${CNI_PLUGINS_VERSION:-0.7.1}"
 CONTAINERD_VERSION="${CONTAINERD_VERSION:-1.2.0-beta.2}"
 COREDNS_VERSION="${COREDNS_VERSION:-1.2.2}"
@@ -999,6 +1024,7 @@ EOF
 }
 
 get_etcd_members_from_discovery_url() {
+  [ -z "${ETCD_DISCOVERY}" ] && return
   members=$(${CURL} -sSL "${ETCD_DISCOVERY}" | \
     grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' | \
     tr '\n' ' ' | \
@@ -1254,7 +1280,7 @@ install_coredns() {
 . {
     log
     errors
-    etcd ${NETWORK_DOMAIN} ${NETWORK_IPV4_SUBNET_CIDR} {
+    etcd ${NETWORK_DOMAIN} 0.0.0.0/0 {
         stubzones
         path /skydns
         endpoint https://127.0.0.1:2379
@@ -1852,6 +1878,101 @@ EOF
     { error "failed to start kube-proxy.service"; return; }
 }
 
+# Installs, but does not start, the service that runs the kubernetes
+# e2e conformance tests. Even if there are multiple worker nodes,
+# the service and its assets are installed on the first worker node 
+# only.
+install_kube_conformance() {
+
+  if [ ! "${INSTALL_CONFORMANCE_TESTS}" = "true" ]; then
+    echo "installation of the kubernetes e2e conformance test service is disabled"
+    return
+  fi
+
+  # Find the first non-controller node in the cluster.
+  if ! node_json=$(etcdctl get /yakity/nodes \
+    --sort-by=KEY --prefix --print-value-only | \
+    jq -rs 'limit(1; .[] | select (.node_type != "controller"))'); then
+    error "failed to find the first non-controller node in the cluster"; return
+  fi
+
+  # Get the IPv4 address of the first non-controller node.
+  if ! ipv4_address=$(echo "${node_json}" | jq -rs '.[] | .ipv4_address'); then
+    error "failed to parse json for ipv4 address: ${node_json}"; return
+  fi
+
+  if [ ! "${ipv4_address}" = "${IPV4_ADDRESS}" ]; then
+    # Get the host FQDN of the first non-controller node.
+    host_fqdn=$(echo "${node_json}" | jq -rs '.[] | .host_fqdn')
+    echo "kube-conformance installed on ${host_fqdn}, ${ipv4_address}"
+    return
+  fi
+
+  echo "installing the kubernetes e2e conformance test service"
+
+  E2E_DIR=/var/lib/kubernetes/e2e
+  E2E_BIN=${E2E_DIR}/platforms/linux/amd64/e2e.test
+  E2E_LOG_DIR=/var/log/kube-conformance
+  E2E_KUBECONFIG="${E2E_DIR}/kubeconfig"
+
+  echo "creating the e2e directories"
+  mkdir -p "${E2E_DIR}"
+
+  echo "fetching shared public k8s-admin kubeconfig"
+  fetch_kubeconfig "${shared_kfg_public_admin_key}" \
+                    "${E2E_KUBECONFIG}" || \
+    { error "failed to fetch shared k8s-admin kubeconfig"; return; }
+
+  cat <<EOF >/opt/bin/download-kubernetes-test.sh
+#!/bin/sh
+{ [ -f "${E2E_BIN}" ] && exit 0; } || mkdir -p "${E2E_DIR}"
+K8S_ARTIFACT="${K8S_ARTIFACT_PREFIX}/kubernetes-test.tar.gz"
+${CURL} -L "\${K8S_ARTIFACT}" | tar --strip-components=1 -xzvC "${E2E_DIR}"
+exit_code="\${?}" && [ "\${exit_code}" -gt "1" ] && exit "\${exit_code}"
+exit 0
+EOF
+
+  chmod 0755 /opt/bin/download-kubernetes-test.sh
+
+  cat <<EOF >/opt/bin/run-kube-conformance.sh
+#!/bin/sh
+/opt/bin/download-kubernetes-test.sh || exit "${?}"
+mkdir -p "${E2E_LOG_DIR}/_artifacts"
+export KUBECONFIG="${E2E_KUBECONFIG}"
+${E2E_BIN} -ginkgo.focus "\\[Conformance\\]" -- \\
+  --disable-log-dump \\
+  --report-dir="${E2E_LOG_DIR}" | \\
+  tee "${E2E_LOG_DIR}/e2e.log"
+EOF
+
+  chmod 0755 /opt/bin/run-kube-conformance.sh
+
+  cat <<EOF >/etc/systemd/system/kube-conformance.service
+[Unit]
+Description=Kubernetes Conformance Tests
+Documentation=https://github.com/kubernetes/test-infra
+After=kubelet.service kube-proxy.service
+Requires=kubelet.service kube-proxy.service
+
+[Service]
+Type=simple
+Restart=no
+WorkingDirectory=${E2E_DIR}
+EnvironmentFile=/etc/default/path
+ExecStart=/opt/bin/run-kube-conformance.sh
+EOF
+
+  echo "enabling kube-conformance.service"
+  systemctl -l enable kube-conformance.service || \
+    { error "failed to enable kube-conformance.service"; return; }
+
+  if [ "${RUN_CONFORMANCE_TESTS}" = "true" ]; then
+    echo "starting kube-conformance.service"
+    systemctl -l start kube-conformance.service || \
+      { error "failed to start kube-conformance.service"; return; }
+  fi
+}
+
 fetch_tls() {
   etcdctl get --print-value-only "${1}" > "${3}" || \
     { error "failed to write '${1}' to '${3}'"; return; }
@@ -1894,6 +2015,7 @@ generate_or_fetch_shared_kubernetes_assets() {
   # The keys for the kubeconfigs.
   shared_kfg_prefix="${shared_assets_prefix}/kfg"
   shared_kfg_admin_key="${shared_kfg_prefix}/k8s-admin"
+  shared_kfg_public_admin_key="${shared_kfg_prefix}/public-k8s-admin"
   shared_kfg_controller_manager_key="${shared_kfg_prefix}/kube-controller-manager"
   shared_kfg_scheduler_key="${shared_kfg_prefix}/kube-scheduler"
   shared_kfg_kube_proxy_key="${shared_kfg_prefix}/kube-proxy"
@@ -2046,7 +2168,15 @@ generate_or_fetch_shared_kubernetes_assets() {
     KFG_PERM=0440 \
     KFG_SERVER="https://127.0.0.1:${SECURE_PORT}" \
     new_kubeconfig) || \
-    { error "failed to generate shared kube-proxy kubeconfig"; return; }
+    { error "failed to generate shared k8s-admin kubeconfig"; return; }
+
+  echo "generating shared public k8s-admin kubeconfig"
+  (KFG_FILE_PATH=/var/lib/kubernetes/public.kubeconfig \
+    KFG_USER=admin \
+    KFG_TLS_CRT=/etc/ssl/k8s-admin.crt \
+    KFG_TLS_KEY=/etc/ssl/k8s-admin.key \
+    new_kubeconfig) || \
+    { error "failed to generate shared public k8s-admin kubeconfig"; return; }
 
   echo "generating shared kube-scheduler kubeconfig"
   (KFG_FILE_PATH=/var/lib/kube-scheduler/kubeconfig \
@@ -2055,7 +2185,7 @@ generate_or_fetch_shared_kubernetes_assets() {
     KFG_TLS_KEY=/etc/ssl/kube-scheduler.key \
     KFG_SERVER="https://127.0.0.1:${SECURE_PORT}" \
     new_kubeconfig) || \
-    { error "failed to generate shared kube-proxy kubeconfig"; return; }
+    { error "failed to generate shared kube-scheduler kubeconfig"; return; }
 
   echo "generating shared kube-controller-manager kubeconfig"
   (KFG_FILE_PATH=/var/lib/kube-controller-manager/kubeconfig \
@@ -2064,7 +2194,7 @@ generate_or_fetch_shared_kubernetes_assets() {
     KFG_TLS_KEY=/etc/ssl/kube-controller-manager.key \
     KFG_SERVER="https://127.0.0.1:${SECURE_PORT}" \
     new_kubeconfig) || \
-    { error "failed to generate shared kube-proxy kubeconfig"; return; }
+    { error "failed to generate shared kube-controller-manager kubeconfig"; return; }
 
   echo "generating shared kube-proxy kubeconfig"
   (KFG_FILE_PATH=/var/lib/kube-proxy/kubeconfig \
@@ -2099,6 +2229,7 @@ EOF
 
   # Store the kubeconfigs on the etcd server.
   put_file "${shared_kfg_admin_key}"              /var/lib/kubernetes/kubeconfig || return
+  put_file "${shared_kfg_public_admin_key}"       /var/lib/kubernetes/public.kubeconfig || return
   put_file "${shared_kfg_controller_manager_key}" /var/lib/kube-controller-manager/kubeconfig || return
   put_file "${shared_kfg_scheduler_key}"          /var/lib/kube-scheduler/kubeconfig || return
   put_file "${shared_kfg_kube_proxy_key}"         /var/lib/kube-proxy/kubeconfig || return
@@ -2118,6 +2249,7 @@ EOF
     rm -f  /var/lib/kubernetes/kubeconfig
     rm -f  /var/lib/kubernetes/encryption-config.yaml
   fi
+  rm -f /var/lib/kubernetes/public.kubeconfig
   rm -f /etc/ssl/k8s-admin.*
   rm -f /etc/ssl/kube-controller-manager.*
   rm -f /etc/ssl/kube-scheduler.*
@@ -2544,6 +2676,10 @@ EOF
       { error "failed to install kubelet"; return; }
     install_kube_proxy || \
       { error "failed to install kube-proxy"; return; }
+
+    # Install the kube-conformance service (when appropriate).
+    install_kube_conformance || \
+      { error "failed to install kube-conformance"; return; }
   fi
 }
 
@@ -2676,10 +2812,6 @@ download_kubernetes_server() {
 }
 
 download_kubernetes_test() {
-  if [ ! "${RUN_CONFORMANCE_TESTS}" = "true" ]; then
-    echo "skipping download_kubernetes_test" && return
-  fi
-
   mkdir -p /var/lib/kubernetes/e2e
   K8S_ARTIFACT="${K8S_ARTIFACT_PREFIX}/kubernetes-test.tar.gz"
   echo "downloading ${K8S_ARTIFACT}"
@@ -2758,7 +2890,6 @@ download_binaries() {
   # Download binaries found only on control-plane nodes.
   if [ ! "${NODE_TYPE}" = "worker" ]; then
     download_kubernetes_server || { error "failed to download kubernetes server"; return; }
-    download_kubernetes_test   || { error "failed to download kubernetes test"; return; }
     download_nginx             || { error "failed to download nginx"; return; }
     download_coredns           || { error "failed to download coredns"; return; }
   fi
