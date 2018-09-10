@@ -109,15 +109,3 @@ resource "vsphere_virtual_machine" "worker" {
     "guestinfo.userdata.encoding" = "gzip+base64"
   }
 }
-
-output "controller_ip_addresses" {
-  value = "${vsphere_virtual_machine.controller.*.default_ip_address}"
-}
-
-output "worker_ip_addresses" {
-  value = "${vsphere_virtual_machine.worker.*.default_ip_address}"
-}
-
-output "controller_discovery" {
-  value = "${data.http.etcd_discovery.body}"
-}

@@ -1,0 +1,34 @@
+#cloud-config
+
+# Configured according to 0.7.9 config schema:
+# http://bit.ly/cloud-init-0-7-9-examples
+
+groups:
+  - k8s-admin
+
+users:
+${users}
+
+write_files:
+  - path: /etc/default/kubeeve
+    owner: root:root
+    permissions: 0644
+    encoding: gzip
+    content: !!binary |
+      ${kubeeve_env}
+
+  - path: /opt/bin/kubeeve.sh
+    owner: root:root
+    permissions: 0755
+    encoding: gzip
+    content: !!binary |
+      ${kubeeve_sh}
+
+runcmd:
+  - [ /opt/bin/kubeeve.sh, ${node_type} ]
+
+packages:
+  - lsof
+  - bind-utils
+  - socat
+  - conntrack-tools

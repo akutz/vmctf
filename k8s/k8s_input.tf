@@ -10,16 +10,24 @@ variable "k8s_version" {
   default = "release/v1.11.2"
 }
 
-variable "master_count" {
+// The name of the cluster
+variable "cluster_name" {
+  default = "k8s"
+}
+
+// The port on which K8s advertises the API server
+variable "api_secure_port" {
+  default = "443"
+}
+
+// The number of controller nodes
+variable "ctl_count" {
   default = "2"
 }
 
-variable "worker_count" {
+// The number of worker nodes
+variable "wrk_count" {
   default = "1"
-}
-
-variable "cluster_name" {
-  default = "k8s"
 }
 
 variable "cluster_admin" {
@@ -28,10 +36,7 @@ variable "cluster_admin" {
 
 // A list of DNS SANs to add to the cluster's TLS certificate
 variable "cluster_sans_dns_names" {
-  default = [
-    "api.cicd.cnx.cna.vmware.run",
-    "k8s.default.svc.vmware.ci",
-  ]
+  default = []
 }
 
 // Can be generated with:
@@ -41,7 +46,7 @@ variable "k8s_encryption_key" {
   default = ""
 }
 
-variable "service_cluster_ip_range" {
+variable "service_cidr" {
   default = "10.32.0.0/24"
 }
 
@@ -56,50 +61,54 @@ variable "pod_cidr" {
 ////////////////////////////////////////////////////////////////////////////////
 //                                   VM                                       //
 ////////////////////////////////////////////////////////////////////////////////
-variable "master_vm_name" {
-  default = "k8s-m%02d"
+variable "ctl_vm_name" {
+  default = "k8s-c%02d"
 }
 
-variable "worker_vm_name" {
+variable "wrk_vm_name" {
   default = "k8s-w%02d"
 }
 
-variable "master_api_secure_port" {
-  default = "443"
-}
-
-variable "master_vm_num_cpu" {
+variable "ctl_vm_num_cpu" {
   default = "8"
 }
 
-variable "master_vm_num_cores_per_socket" {
+variable "ctl_vm_num_cores_per_socket" {
   default = "4"
 }
 
-variable "master_vm_memory" {
-  default = "65536"
+variable "ctl_vm_memory" {
+  default = "32768"
 }
 
-variable "worker_vm_num_cpu" {
-  default = "8"
+variable "ctl_vm_disk_size" {
+  default = "20"
 }
 
-variable "worker_vm_num_cores_per_socket" {
+variable "wrk_vm_num_cpu" {
+  default = "16"
+}
+
+variable "wrk_vm_num_cores_per_socket" {
   default = "4"
 }
 
-variable "worker_vm_memory" {
+variable "wrk_vm_memory" {
   default = "65536"
+}
+
+variable "wrk_vm_disk_size" {
+  default = "100"
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                Networking                                  //
 ////////////////////////////////////////////////////////////////////////////////
-variable "master_network_hostname" {
-  default = "k8s-m%02d"
+variable "ctl_network_hostname" {
+  default = "k8s-c%02d"
 }
 
-variable "worker_network_hostname" {
+variable "wrk_network_hostname" {
   default = "k8s-w%02d"
 }
 
@@ -107,7 +116,7 @@ variable "worker_network_hostname" {
 //
 // Please see cidrhost at https://www.terraform.io/docs/configuration/interpolation.html 
 // and http://www.rjsmith.com/CIDR-Table.html for more information. 
-variable "master_network_ipv4_address" {
+variable "ctl_network_ipv4_address" {
   default = "192.168.2.128/25"
 }
 
@@ -115,29 +124,39 @@ variable "master_network_ipv4_address" {
 //
 // Please see cidrhost at https://www.terraform.io/docs/configuration/interpolation.html 
 // and http://www.rjsmith.com/CIDR-Table.html for more information. 
-variable "worker_network_ipv4_address" {
+variable "wrk_network_ipv4_address" {
   default = "192.168.2.192/26"
+}
+
+// A boolean true opens iptables wide-open. This setting should only be
+// used during development.
+variable "iptables_allow_all" {
+  default = true
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //                              Artifacts                                     //
 ////////////////////////////////////////////////////////////////////////////////
 
-// master
+variable "jq_version" {
+  default = "1.5"
+}
 
-// https://github.com/coreos/etcd/releases
-variable "etcd_artifact" {
-  default = "https://github.com/coreos/etcd/releases/download/v3.3.9/etcd-v3.3.9-linux-amd64.tar.gz"
+// controller
+
+// https://github.com/etcd-io/etcd/releases
+variable "etcd_version" {
+  default = "3.3.9"
 }
 
 // https://github.com/coredns/coredns/releases
-variable "coredns_artifact" {
-  default = "https://github.com/coredns/coredns/releases/download/v1.2.0/coredns_1.2.0_linux_amd64.tgz"
+variable "coredns_version" {
+  default = "1.2.2"
 }
 
 // Valid versions include:
-//   * v1.14.0
-//   * v1.15.2
+//   * 1.14.0
+//   * 1.15.2
 variable "nginx_version" {
   default = "1.14.0"
 }
@@ -156,7 +175,7 @@ variable "runc_version" {
 
 // https://storage.googleapis.com/gvisor/releases/nightly
 variable "runsc_version" {
-  default = "2018-08-17"
+  default = "2018-09-01"
 }
 
 // https://github.com/containernetworking/plugins/releases
@@ -166,5 +185,54 @@ variable "cni_plugins_version" {
 
 // https://github.com/containerd/containerd/releases
 variable "containerd_version" {
-  default = "1.1.0"
+  //default = "1.1.0"
+  default = "1.2.0-beta.2"
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//                                  TLS                                        //
+////////////////////////////////////////////////////////////////////////////////
+variable "tls_ca_crt" {
+  default = ""
+}
+
+variable "tls_ca_key" {
+  default = ""
+}
+
+locals {
+  tls_ca_crt = "${base64decode(var.tls_ca_crt)}"
+  tls_ca_key = "${base64decode(var.tls_ca_key)}"
+}
+
+variable "tls_bits" {
+  default = "2048"
+}
+
+variable "tls_days" {
+  default = "365"
+}
+
+variable "tls_org" {
+  default = "VMware"
+}
+
+variable "tls_ou" {
+  default = "CNX"
+}
+
+variable "tls_country" {
+  default = "US"
+}
+
+variable "tls_province" {
+  default = "California"
+}
+
+variable "tls_locality" {
+  default = "Palo Alto"
+}
+
+variable "tls_email" {
+  default = "cnx@vmware.com"
 }

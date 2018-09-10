@@ -1,3 +1,0 @@
-/.terraform/
-/*.tfstate*
-/secure.auto.tfvars

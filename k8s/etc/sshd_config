@@ -1,8 +1,0 @@
-# Use most defaults for sshd configuration.
-UsePrivilegeSeparation sandbox
-Subsystem sftp internal-sftp
-UseDNS no
-
-PermitRootLogin no
-AllowUsers core ${allow_users}
-AuthenticationMethods publickey
