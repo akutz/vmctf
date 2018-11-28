@@ -6,7 +6,7 @@ variable "name" {
 # The host name assigned to the VM as well as the value of the 
 # --hostname flag when starting the LDAP container.
 variable "hostname" {
-  default = "ldap.cicd.cnx.cna.vmware.run"
+  default = "ldap.vmware.ci"
 }
 
 // The total number of vCPUs.
@@ -108,7 +108,7 @@ variable "network_domains" {
 // > A static IPv4 or IPv6 address and its prefix length, separated by a 
 // > "/" character. 
 variable "network_ipv4_address" {
-  default = "192.168.2.2/24"
+  default = "192.168.2.3/24"
 }
 
 variable "network_ipv4_gateway" {
@@ -134,7 +134,7 @@ variable "ldap_org" {
 #     OU=users,DC=cicd,DC=cnx,DC=cna,DC=vmware,DC=run
 #    OU=groups,DC=cicd,DC=cnx,DC=cna,DC=vmware,DC=run
 variable "ldap_domain" {
-  default = "cicd.cnx.cna.vmware.run"
+  default = "vmware.ci"
 }
 
 variable "ldap_root_user" {

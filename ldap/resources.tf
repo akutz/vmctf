@@ -13,6 +13,8 @@ resource "vsphere_virtual_machine" "virtual_machine" {
   network_interface {
     network_id   = "${data.vsphere_network.network.id}"
     adapter_type = "${data.vsphere_virtual_machine.template.network_interface_types[0]}"
+    use_static_mac = true
+    mac_address    = "00:00:0f:41:1b:c3"
   }
 
   disk {

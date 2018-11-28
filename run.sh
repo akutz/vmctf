@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# posix complaint
+# posix compliant
 # verified by https://www.shellcheck.net
 
 COMMAND="${1}"
@@ -53,7 +53,7 @@ done
 #if [ "${COMMAND}" = "deploy" ]; then echo "${ENVS_FILE}" && exit 1; fi
 
 # Launch the container.
-docker run \
+docker run -it \
   --rm \
   --name "${CONTAINER_NAME:-vmctf}" \
   --env-file "${ENVS_FILE}" \

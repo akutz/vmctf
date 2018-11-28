@@ -185,6 +185,7 @@ Requires=docker.service network-online.target
 Wants=docker.service network-online.target
 
 [Service]
+ExecStartPre=/bin/sh -c "while true; do ping -c1 google.com >/dev/null && break; done"
 ExecStartPre=/bin/mkdir -p /var/lib/slapd/ldif "${local.ldap_tls}"
 ExecStartPre=/usr/bin/sh -c 'if [ ! -e "${local.ldap_tls_ca}" ]; then \
   if PEM=$(cat ${data.ignition_file.slapd_env.path} | \
