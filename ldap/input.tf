@@ -72,7 +72,7 @@ variable users {
 
 // The name of the network to use.
 variable "network_name" {
-  default = "VMC Networks/sddc-cgw-network-2"
+  default = "sddc-cgw-network-2"
 }
 
 variable "network_domain" {
