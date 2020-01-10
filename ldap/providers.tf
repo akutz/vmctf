@@ -5,3 +5,7 @@ terraform {
 }
 
 provider vsphere {}
+
+provider "ignition" {
+  version = "1.1.0"
+}
